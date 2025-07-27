@@ -115,7 +115,7 @@ services:
     networks:
       - default
     volumes:
-      - ${CONFIG}/homeserver/homer/data:/www/assets
+      - ${DATA}/homer/data:/www/assets
 
   dashdot:
     image: mauricenino/dashdot:nvidia
@@ -259,7 +259,7 @@ services:
       - default
     volumes:
       - minecraft-server:/data
-      - ${CONFIG}/minecraft/assets:/data/assets
+      - ${DATA}/minecraft/assets:/data/assets
 
   rlcraft-minecraft-server:
     image: itzg/minecraft-server:java8
@@ -377,7 +377,7 @@ services:
     volumes:
       - ${DATA}/qbittorrent/config:/config
       - ${RAID}/shared/torrents:/data/torrents
-      - ${CONFIG}/homeserver/VueTorrent:/vuetorrent
+      - ${DATA}/qbittorrent/VueTorrent:/vuetorrent
     ports:
       - 6881:6881
       - 6881:6881/udp
