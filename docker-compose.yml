@@ -1,10 +1,6 @@
-version: "3.9"
-
 x-gpu: &gpu
-  device_requests:
-    - driver: nvidia
-      count: all
-      capabilities: [ gpu ]
+  devices:
+    - "nvidia.com/gpu=all"
 
 services:
   authelia:
@@ -329,9 +325,6 @@ services:
       - ${DATA}/plex/config:/config
       - /tmp/plex:/transcode
       - ${RAID}/shared/media:/data/media
-    devices:
-      - "/dev/dri:/dev/dri"
-    runtime: "nvidia"
 
   sabnzbd:
     container_name: sabnzbd
