@@ -19,16 +19,8 @@ services:
   cpu: {}
 
   cuda:
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities:
-                - gpu
-                - compute
-                - video
+    devices:
+      - "nvidia.com/gpu=all"
 
   openvino:
     device_cgroup_rules:
