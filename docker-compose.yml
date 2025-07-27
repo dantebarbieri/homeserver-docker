@@ -47,35 +47,35 @@ services:
     networks:
       - authelia
 
-  admin.danteb.com:
-    build:
-      context: .
-      dockerfile: Dockerfile.sveltekit
-      args:
-        APP_NAME: admin.danteb.com
-    environment:
-      NODE_ENV: production
-      PORT: 3000
-    networks:
-      default:
-        aliases:
-          - admin-danteb
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+  # admin.danteb.com:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.sveltekit
+  #     args:
+  #       APP_NAME: admin.danteb.com
+  #   environment:
+  #     NODE_ENV: production
+  #     PORT: 3000
+  #   networks:
+  #     default:
+  #       aliases:
+  #         - admin-danteb
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
 
-  danteb.com:
-    build:
-      context: .
-      dockerfile: Dockerfile.sveltekit
-      args:
-        APP_NAME: danteb.com
-    environment:
-      NODE_ENV: production
-      PORT: 3000
-    networks:
-      default:
-        aliases:
-          - danteb
+  # danteb.com:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.sveltekit
+  #     args:
+  #       APP_NAME: danteb.com
+  #   environment:
+  #     NODE_ENV: production
+  #     PORT: 3000
+  #   networks:
+  #     default:
+  #       aliases:
+  #         - danteb
 
   adguardhome:
     image: adguard/adguardhome
