@@ -147,8 +147,8 @@ services:
     env_file:
       - .env
     depends_on:
-      - redis
-      - database
+      - immich-redis
+      - immich-postgres
     restart: always
     healthcheck:
       disable: false
@@ -614,7 +614,7 @@ services:
       INTERVAL: 300
       LOG_LEVEL: info
       SELF_UPDATE: true
-      IGNORE: immich-server immich-microservices immich-machine-learning redis database
+      IGNORE: immich-server immich-microservices immich-machine-learning immich-redis immich-postgres
       TZ: ${TZ}
     restart: unless-stopped
     networks:
