@@ -1,14 +1,11 @@
-secrets:
-  EMAIL_PASSWORD:
-    file: '${DATA}/dms/secrets/EMAIL_PASSWORD'
-  JWT_SECRET:
-    file: '${DATA}/authelia/secrets/JWT_SECRET'
-  SESSION_SECRET:
-    file: '${DATA}/authelia/secrets/SESSION_SECRET'
-  STORAGE_PASSWORD:
-    file: '${DATA}/authelia/secrets/STORAGE_PASSWORD'
-  STORAGE_ENCRYPTION_KEY:
-    file: '${DATA}/authelia/secrets/STORAGE_ENCRYPTION_KEY'
+version: "3.9"
+
+x-gpu: &gpu
+  device_requests:
+    - driver: nvidia
+      count: all
+      capabilities: [ gpu ]
+
 services:
   authelia:
     container_name: 'authelia'
@@ -122,12 +119,7 @@ services:
     container_name: dashdot
     restart: unless-stopped
     privileged: true
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - capabilities:
-                - gpu
+    <<: *gpu
     networks:
       - default
     volumes:
@@ -312,14 +304,7 @@ services:
     container_name: plex
     image: plexinc/pms-docker
     restart: unless-stopped
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities:
-                - gpu
+    <<: *gpu
     ports:
       - "32400:32400/tcp"
       - "8324:8324/tcp"
@@ -456,13 +441,7 @@ services:
     environment:
       ASR_MODEL: turbo
       ASR_ENGINE: openai_whisper
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+    <<: *gpu
     restart: unless-stopped
     networks:
       - default
@@ -575,14 +554,7 @@ services:
       - default
 
   ollama:
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: ${OLLAMA_GPU_DRIVER:-nvidia}
-              count: ${OLLAMA_GPU_COUNT:-1}
-              capabilities:
-                - gpu
+    <<: *gpu
     networks:
       - open-webui
     volumes:
@@ -674,3 +646,15 @@ volumes:
   open-webui:
   valkey-data:
   vw-data:
+
+secrets:
+  EMAIL_PASSWORD:
+    file: '${DATA}/dms/secrets/EMAIL_PASSWORD'
+  JWT_SECRET:
+    file: '${DATA}/authelia/secrets/JWT_SECRET'
+  SESSION_SECRET:
+    file: '${DATA}/authelia/secrets/SESSION_SECRET'
+  STORAGE_PASSWORD:
+    file: '${DATA}/authelia/secrets/STORAGE_PASSWORD'
+  STORAGE_ENCRYPTION_KEY:
+    file: '${DATA}/authelia/secrets/STORAGE_ENCRYPTION_KEY'
