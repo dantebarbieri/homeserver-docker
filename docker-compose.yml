@@ -641,8 +641,6 @@ volumes:
   vw-data:
 
 secrets:
-  EMAIL_PASSWORD:
-    file: '${DATA}/dms/secrets/EMAIL_PASSWORD'
   JWT_SECRET:
     file: '${DATA}/authelia/secrets/JWT_SECRET'
   SESSION_SECRET:
