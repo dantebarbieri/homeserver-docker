@@ -362,6 +362,7 @@ services:
       FIREWALL_INPUT_PORTS: 8080
     volumes:
       - ${DATA}/gluetun:/gluetun
+      - gluetun-tmp:/tmp/gluetun 
     networks:
       default:
         aliases:
@@ -391,15 +392,15 @@ services:
       QUSER: ${QUSER}
       QPASS: ${QPASS}
     volumes:
-      - ${DATA}/gluetun:/gluetun:ro
+      - gluetun-tmp:/tmp/gluetun:ro
     entrypoint: ["/bin/sh","-c"]
     command: |
       while true; do
-        PORT=$(cat /gluetun/forwarded_port 2>/dev/null || echo "")
-        if [ -n "$PORT" ]; then
+        PORT=$(cat /tmp/gluetun/forwarded_port 2>/dev/null || echo "")
+        if [ -n "$$PORT" ]; then
           curl -s -c /tmp/c -d "username=${QUSER}&password=${QPASS}" \
             http://127.0.0.1:8080/api/v2/auth/login >/dev/null
-          curl -s -b /tmp/c --data-urlencode "json={\"listen_port\":$PORT}" \
+          curl -s -b /tmp/c --data-urlencode "json={\"listen_port\":$$PORT}" \
             http://127.0.0.1:8080/api/v2/app/setPreferences >/dev/null
         fi
         sleep 300
@@ -676,12 +677,13 @@ networks:
 
 volumes:
   authelia-storage:
-  pgdata:
-  model-cache:
+  gluetun-tmp:
   minecraft-server:
-  rlcraft-minecraft-server:
+  model-cache:
   ollama:
   open-webui:
+  pgdata:
+  rlcraft-minecraft-server:
   valkey-data:
   vw-data:
 
