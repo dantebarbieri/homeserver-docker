@@ -108,7 +108,7 @@ services:
     networks:
       - default
     volumes:
-      - ${DATA}/homer/data:/www/assets
+      - ${DATA}/homer:/www/assets
 
   dashdot:
     image: mauricenino/dashdot:nvidia
