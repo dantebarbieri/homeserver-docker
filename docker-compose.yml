@@ -390,20 +390,12 @@ services:
     environment:
       QUSER: ${QUSER}
       QPASS: ${QPASS}
+      PORT_FILE: /tmp/gluetun/forwarded_port
+      QHOST: 127.0.0.1:8080
     volumes:
       - gluetun-tmp:/tmp/gluetun:ro
-    entrypoint: ["/bin/sh","-c"]
-    command: |
-      while true; do
-        PORT=$(cat /tmp/gluetun/forwarded_port 2>/dev/null || echo "")
-        if [ -n "$$PORT" ]; then
-          curl -s -c /tmp/c -d "username=${QUSER}&password=${QPASS}" \
-            http://127.0.0.1:8080/api/v2/auth/login >/dev/null
-          curl -s -b /tmp/c --data-urlencode "json={\"listen_port\":$$PORT}" \
-            http://127.0.0.1:8080/api/v2/app/setPreferences >/dev/null
-        fi
-        sleep 300
-      done
+      - ${DATA}/gluetun/port-sync.sh:/usr/local/bin/port-sync.sh:ro
+    entrypoint: ["/bin/sh","-c","/usr/local/bin/port-sync.sh"]
     restart: unless-stopped
 
   recyclarr:
