@@ -11,6 +11,7 @@ services:
       - authelia
       - default
     secrets:
+      - EMAIL_PASSWORD
       - JWT_SECRET
       - SESSION_SECRET
       - STORAGE_PASSWORD
