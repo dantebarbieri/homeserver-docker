@@ -342,22 +342,67 @@ services:
       - ${DATA}/sabnzbd/config:/config
       - ${RAID}/shared/usenet:/data/usenet:rw
 
+  gluetun:
+    image: qmcgaw/gluetun:latest
+    container_name: gluetun
+    cap_add: [NET_ADMIN]
+    devices: [/dev/net/tun]
+    environment:
+      VPN_SERVICE_PROVIDER: protonvpn
+      VPN_TYPE: wireguard
+      WIREGUARD_PRIVATE_KEY: ${WG_PRIVATE_KEY}
+      WIREGUARD_ADDRESSES: ${WG_ADDRESS}
+      SERVER_COUNTRIES: ${SERVER_COUNTRY}
+      SERVER_CITIES: ${SERVER_CITIES}
+      PORT_FORWARD_ONLY: on
+      VPN_PORT_FORWARDING: on
+      TZ: ${TZ}
+      FIREWALL_OUTBOUND_SUBNETS: 192.168.1.0/24,172.18.0.0/16
+      FIREWALL_INPUT_PORTS: 8080
+    volumes:
+      - ${DATA}/gluetun:/gluetun
+    networks:
+      default:
+        aliases:
+          - qbittorrent
+    restart: unless-stopped
+
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
-    container_name: qbittorrent
+    container_name: qbittorrent-app
+    network_mode: "service:gluetun"
+    depends_on: [gluetun]
     environment:
       PUID: ${UID}
       PGID: ${GID}
       TZ: ${TZ}
-    networks:
-      - default
     volumes:
       - ${DATA}/qbittorrent/config:/config
       - ${RAID}/shared/torrents:/data/torrents
       - ${DATA}/qbittorrent/VueTorrent:/vuetorrent
-    ports:
-      - 6881:6881
-      - 6881:6881/udp
+    restart: unless-stopped
+
+  qbit-port-sync:
+    image: alpine:3
+    network_mode: "service:gluetun"
+    depends_on: [qbittorrent]
+    environment:
+      QUSER: ${QUSER}
+      QPASS: ${QPASS}
+    volumes:
+      - ${DATA}/gluetun:/gluetun:ro
+    entrypoint: ["/bin/sh","-c"]
+    command: |
+      while true; do
+        PORT=$(cat /gluetun/forwarded_port 2>/dev/null || echo "")
+        if [ -n "$PORT" ]; then
+          curl -s -c /tmp/c -d "username=${QUSER}&password=${QPASS}" \
+            http://127.0.0.1:8080/api/v2/auth/login >/dev/null
+          curl -s -b /tmp/c --data-urlencode "json={\"listen_port\":$PORT}" \
+            http://127.0.0.1:8080/api/v2/app/setPreferences >/dev/null
+        fi
+        sleep 300
+      done
     restart: unless-stopped
 
   recyclarr:
