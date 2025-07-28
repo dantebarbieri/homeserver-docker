@@ -384,7 +384,7 @@ services:
     restart: unless-stopped
 
   qbit-port-sync:
-    image: alpine:3
+    image: curlimages/curl:latest
     network_mode: "service:gluetun"
     depends_on: [qbittorrent]
     environment:
