@@ -213,7 +213,7 @@ services:
       start_period: 5m
 
   minecraft-server:
-    image: itzg/minecraft-server:java8
+    image: itzg/minecraft-server:latest
     container_name: minecraft-server
     restart: unless-stopped
     tty: true
