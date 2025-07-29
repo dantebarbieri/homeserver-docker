@@ -563,39 +563,6 @@ services:
     networks:
       - default
 
-  ollama:
-    <<: *gpu
-    networks:
-      - open-webui
-    volumes:
-      - ollama:/root/.ollama
-    environment:
-      OLLAMA_HOST: 0.0.0.0
-    container_name: ollama
-    pull_policy: always
-    tty: true
-    restart: unless-stopped
-    image: ollama/ollama:${OLLAMA_DOCKER_TAG:-latest}
-
-  open-webui:
-    build:
-      context: .
-      args:
-        OLLAMA_BASE_URL: "/ollama"
-      dockerfile: Dockerfile
-    image: ghcr.io/open-webui/open-webui:${WEBUI_DOCKER_TAG:-main}
-    container_name: open-webui
-    networks:
-      - open-webui
-      - default
-    volumes:
-      - open-webui:/app/backend/data
-    depends_on:
-      - ollama
-    environment:
-      OLLAMA_BASE_URL: http://ollama:11434
-    restart: unless-stopped
-
   ddclient:
     image: lscr.io/linuxserver/ddclient:latest
     container_name: ddclient
@@ -638,7 +605,6 @@ networks:
   authelia:
   default:
   immich:
-  open-webui:
   searxng:
 
 volumes:
@@ -646,8 +612,6 @@ volumes:
   gluetun-tmp:
   minecraft-server:
   model-cache:
-  ollama:
-  open-webui:
   pgdata:
   rlcraft-minecraft-server:
   valkey-data:
