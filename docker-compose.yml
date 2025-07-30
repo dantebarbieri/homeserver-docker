@@ -604,6 +604,7 @@ services:
 networks:
   authelia:
   default:
+    enable_ipv6: true
   immich:
   searxng:
 
