@@ -554,9 +554,17 @@ services:
   ntfy:
     image: binwiederhier/ntfy:latest
     container_name: ntfy
+    command:
+      - serve
     restart: unless-stopped
+    healthcheck: # optional: remember to adapt the host:port to your environment
+        test: ["CMD-SHELL", "wget -q --tries=1 https://ntfy.danteb.com/v1/health -O - | grep -Eo '\"healthy\"\\s*:\\s*true' || exit 1"]
+        interval: 60s
+        timeout: 10s
+        retries: 3
+        start_period: 40s
     environment:
-      - TZ=${TZ}
+      TZ: ${TZ}
     volumes:
       - ${DATA}/ntfy/config:/etc/ntfy
       - ${DATA}/ntfy/cache:/var/cache/ntfy
