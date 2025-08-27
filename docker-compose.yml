@@ -550,6 +550,23 @@ services:
     cap_drop: [ALL]
     cap_add: [CHOWN, SETGID, SETUID]
 
+  syncthing:
+    image: syncthing/syncthing
+    container_name: syncthing
+    hostname: syncthing
+    environment:
+      - PUID=${UID}
+      - PGID=${GID}
+    volumes:
+      - ${DATA}/syncthing:/var/syncthing
+    network_mode: host
+    restart: unless-stopped
+    healthcheck:
+      test: curl -fkLsS -m 2 127.0.0.1:8384/rest/noauth/health | grep -o --color=never OK || exit 1
+      interval: 1m
+      timeout: 10s
+      retries: 3
+
   ntfy:
     image: binwiederhier/ntfy:latest
     container_name: ntfy
