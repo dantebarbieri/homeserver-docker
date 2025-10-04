@@ -32,13 +32,14 @@ services:
     networks:
       - authelia
     volumes:
-      - authelia-storage:/var/lib/postgresql/data
+      - authelia-storage:/var/lib/postgresql
     secrets:
       - STORAGE_PASSWORD
     shm_size: 128mb
     environment:
       POSTGRES_PASSWORD_FILE: /run/secrets/STORAGE_PASSWORD
       POSTGRES_USER: authelia
+      PGDATA: /var/lib/postgresql/data
 
   authelia_redis:
     container_name: 'authelia_redis'
