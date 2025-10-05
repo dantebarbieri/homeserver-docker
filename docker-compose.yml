@@ -372,9 +372,7 @@ services:
     image: lscr.io/linuxserver/qbittorrent:latest
     container_name: qbittorrent-app
     network_mode: "service:gluetun"
-    depends_on:
-      gluetun:
-        condition: service_healthy
+    depends_on: [gluetun]
     environment:
       PUID: ${UID}
       PGID: ${GID}
@@ -383,7 +381,7 @@ services:
       - ${DATA}/qbittorrent/config:/config
       - ${RAID}/shared/torrents:/data/torrents
       - ${DATA}/qbittorrent/VueTorrent:/vuetorrent
-    restart: unless-stopped
+    restart: always
 
   qbit-port-sync:
     image: curlimages/curl:latest
