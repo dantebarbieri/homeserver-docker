@@ -342,9 +342,19 @@ services:
       - ${DATA}/sabnzbd/config:/config
       - ${RAID}/shared/usenet:/data/usenet:rw
 
+  vpn-netns:
+    image: registry.k8s.io/pause:3.9
+    container_name: vpn-netns
+    networks:
+      default:
+        aliases:
+          - qbittorrent
+    restart: always
+
   gluetun:
     image: qmcgaw/gluetun:latest
     container_name: gluetun
+    network_mode: "container:vpn-netns"
     cap_add: [NET_ADMIN]
     devices: [/dev/net/tun]
     environment:
@@ -361,18 +371,14 @@ services:
       FIREWALL_INPUT_PORTS: 8080
     volumes:
       - ${DATA}/gluetun:/gluetun
-      - gluetun-tmp:/tmp/gluetun 
-    networks:
-      default:
-        aliases:
-          - qbittorrent
+      - gluetun-tmp:/tmp/gluetun
+    depends_on: [vpn-netns]
     restart: unless-stopped
 
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
     container_name: qbittorrent-app
-    network_mode: "service:gluetun"
-    depends_on: [gluetun]
+    network_mode: "container:vpn-netns"
     environment:
       PUID: ${UID}
       PGID: ${GID}
@@ -381,12 +387,16 @@ services:
       - ${DATA}/qbittorrent/config:/config
       - ${RAID}/shared/torrents:/data/torrents
       - ${DATA}/qbittorrent/VueTorrent:/vuetorrent
+    depends_on:
+      gluetun:
+        condition: service_healthy
+      vpn-netns:
+        condition: service_started
     restart: always
 
   qbit-port-sync:
     image: curlimages/curl:latest
-    network_mode: "service:gluetun"
-    depends_on: [qbittorrent]
+    network_mode: "container:vpn-netns"
     environment:
       QUSER: ${QUSER}
       QPASS: ${QPASS}
@@ -396,6 +406,11 @@ services:
       - gluetun-tmp:/tmp/gluetun:ro
       - ${DATA}/gluetun/port-sync.sh:/usr/local/bin/port-sync.sh:ro
     entrypoint: ["/bin/sh","-c","/usr/local/bin/port-sync.sh"]
+    depends_on:
+      gluetun:
+        condition: service_healthy
+      vpn-netns:
+        condition: service_started
     restart: unless-stopped
 
   recyclarr:
