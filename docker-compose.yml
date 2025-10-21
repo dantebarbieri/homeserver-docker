@@ -351,6 +351,21 @@ services:
           - qbittorrent
     restart: always
 
+  vpn-watcher:
+    image: docker:26-cli
+    container_name: vpn-watcher
+    network_mode: none
+    restart: unless-stopped
+    environment:
+      GLUETUN_NAME: gluetun
+      QBIT_NAME: qbittorrent-app
+      DEBOUNCE: "15" # seconds
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${DATA}/vpn-watcher/vpn-watcher.sh:/usr/local/bin/vpn-watcher.sh:ro
+    entrypoint: ["/bin/sh","-c","/usr/local/bin/vpn-watcher.sh"]
+
+
   gluetun:
     image: qmcgaw/gluetun:latest
     container_name: gluetun
