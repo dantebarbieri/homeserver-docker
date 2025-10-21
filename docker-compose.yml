@@ -360,9 +360,12 @@ services:
       GLUETUN_NAME: gluetun
       QBIT_NAME: qbittorrent-app
       DEBOUNCE: "15" # seconds
+      LOG_FILE: /logs/vpn-watcher.log
+      VERBOSE_HEALTHCHECK: 0
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ${DATA}/vpn-watcher/vpn-watcher.sh:/usr/local/bin/vpn-watcher.sh:ro
+      - ${DATA}/vpn-watcher/logs:/logs
     entrypoint: ["/bin/sh","-c","/usr/local/bin/vpn-watcher.sh"]
 
 
