@@ -9,14 +9,18 @@ cd "$SCRIPT_DIR"
 
 # Source the .env file to get DATA path
 if [ -f .env ]; then
+    set +e  # Temporarily disable exit on error
     set -a
-    . ./.env
+    . ./.env 2>/dev/null
     set +a
+    set -e  # Re-enable exit on error
 else
     echo "⚠️  Warning: .env file not found. Using sample.env values."
+    set +e  # Temporarily disable exit on error
     set -a
-    . ./sample.env
+    . ./sample.env 2>/dev/null
     set +a
+    set -e  # Re-enable exit on error
 fi
 
 # Create necessary directories
