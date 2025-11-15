@@ -359,6 +359,8 @@ services:
     environment:
       GLUETUN_NAME: gluetun
       QBIT_NAME: qbittorrent-app
+      QBIT_SERVICE: qbittorrent
+      COMPOSE_FILE: /compose/docker-compose.yml
       DEBOUNCE: "15" # seconds
       LOG_FILE: /logs/vpn-watcher.log
       VERBOSE_HEALTHCHECK: 0
@@ -366,6 +368,9 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ${DATA}/vpn-watcher/vpn-watcher.sh:/usr/local/bin/vpn-watcher.sh:ro
       - ${DATA}/vpn-watcher/logs:/logs
+      - ./docker-compose.yml:/compose/docker-compose.yml:ro
+      - ./.env:/compose/.env:ro
+    working_dir: /compose
     entrypoint: ["/bin/sh","-c","/usr/local/bin/vpn-watcher.sh"]
 
 
@@ -410,6 +415,12 @@ services:
         condition: service_healthy
       vpn-netns:
         condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:8080 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
     restart: always
 
   qbit-port-sync:
