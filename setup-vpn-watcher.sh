@@ -10,12 +10,12 @@ cd "$SCRIPT_DIR"
 # Source the .env file to get DATA path
 if [ -f .env ]; then
     set -a
-    . .env
+    . ./.env
     set +a
 else
     echo "⚠️  Warning: .env file not found. Using sample.env values."
     set -a
-    . sample.env
+    . ./sample.env
     set +a
 fi
 
