@@ -9,10 +9,14 @@ cd "$SCRIPT_DIR"
 
 # Source the .env file to get DATA path
 if [ -f .env ]; then
-    export $(grep -v '^#' .env | xargs)
+    set -a
+    . .env
+    set +a
 else
     echo "⚠️  Warning: .env file not found. Using sample.env values."
-    export $(grep -v '^#' sample.env | xargs)
+    set -a
+    . sample.env
+    set +a
 fi
 
 # Create necessary directories
