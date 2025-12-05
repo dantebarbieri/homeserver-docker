@@ -727,6 +727,31 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
+  satisfactory-server:
+    container_name: satisfactory-server
+    hostname: satisfactory-server
+    image: wolveix/satisfactory-server:latest
+    restart: unless-stopped
+    ports:
+      - "7777:7777/tcp"
+      - "7777:7777/udp"
+      - "8888:8888/tcp"
+    environment:
+      PUID: ${UID}
+      PGID: ${GID}
+      MAXPLAYERS: 4
+      STEAMBETA: false
+    networks:
+      - default
+    volumes:
+      - ${DATA}/satisfactory-server:/config
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          memory: 4G
+
 networks:
   authelia:
   default:
