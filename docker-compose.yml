@@ -211,21 +211,26 @@ services:
       interval: 5m
       start_interval: 30s
       start_period: 5m
-  
+
   hytale-server:
-    image: deinfreu/hytale-server-container:latest
+    image: deinfreu/hytale-server:experimental
     container_name: hytale-server
     restart: unless-stopped
+    tty: true
+    stdin_open: true
     ports:
       - "5520:5520/udp"
     environment:
-      EULA: true
+      SERVER_IP: "0.0.0.0"
+      SERVER_PORT: 5520
+      PROD: false
       DEBUG: false
       TZ: ${TZ}
     networks:
       - default
     volumes:
       - hytale-server:/home/container
+      - /etc/machine-id:/etc/machine-id:ro
 
   minecraft-server:
     image: itzg/minecraft-server:latest
