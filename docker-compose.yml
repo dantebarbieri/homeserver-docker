@@ -784,6 +784,7 @@ networks:
 volumes:
   authelia-storage:
   gluetun-tmp:
+  hytale-server:
   minecraft-server:
   model-cache:
   pgdata:
