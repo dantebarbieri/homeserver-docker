@@ -219,11 +219,11 @@ services:
     tty: true
     stdin_open: true
     ports:
-      - "5520:5520/udp"
+      - "5205:5520/udp"
     environment:
       SERVER_IP: "0.0.0.0"
       SERVER_PORT: 5520
-      PROD: false
+      PROD: true
       DEBUG: false
       TZ: ${TZ}
     networks:
