@@ -218,13 +218,15 @@ services:
     restart: unless-stopped
     tty: true
     stdin_open: true
+    mem_limit: 24g
+    memswap_limit: 24g
     ports:
       - "5205:5520/udp"
     environment:
       SERVER_IP: "0.0.0.0"
       SERVER_PORT: 5520
-      PROD: true
-      DEBUG: false
+      PROD: TRUE
+      DEBUG: FALSE
       TZ: ${TZ}
     networks:
       - default
