@@ -1,0 +1,36 @@
+# Dashboard and monitoring services
+# homer, dashdot
+
+services:
+  homer:
+    image: b4bz/homer
+    container_name: homer
+    user: "${UID}:${GID}"
+    environment:
+      INIT_ASSETS: 1
+    networks:
+      - default
+    volumes:
+      - ${DATA}/homer:/www/assets
+
+  dashdot:
+    extends:
+      file: compose.common.yml
+      service: gpu-service
+    image: mauricenino/dashdot:nvidia
+    container_name: dashdot
+    restart: unless-stopped
+    privileged: true
+    networks:
+      - default
+    volumes:
+      - /:/mnt/host:ro
+    environment:
+      DASHDOT_WIDGET_LIST: "os,cpu,storage,ram,network,gpu"
+      DASHDOT_SHOW_HOST: true
+      DASHDOT_ENABLE_CPU_TEMPS: true
+      DASHDOT_NETWORK_LABEL_LIST: type,speed_up,speed_down,interface_speed,public_ip
+      DASHDOT_ACCEPT_OOKLA_EULA: true
+      DASHDOT_USE_NETWORK_INTERFACE: bond0
+      DASHDOT_FS_DEVICE_FILTER: nvme1n1,sda,sdb,sdc,sdd,sde,sdf,sdg,sdh,sdi,sdj,sdk,sdl
+      DASHDOT_FS_VIRTUAL_MOUNTS: /dev/mapper/vg_redundant-lv_data

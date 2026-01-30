@@ -1,0 +1,114 @@
+# Starr apps and media management
+# radarr, sonarr, bazarr, prowlarr, recyclarr, overseerr, whisperasr
+
+services:
+  recyclarr:
+    extends:
+      file: compose.common.yml
+      service: common-service
+    container_name: recyclarr
+    image: ghcr.io/recyclarr/recyclarr:latest
+    environment:
+      PUID: ${UID}
+      PGID: ${GID}
+      TZ: ${TZ}
+    networks:
+      - default
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DATA}/recyclarr/config:/config
+
+  radarr:
+    extends:
+      file: compose.common.yml
+      service: hotio-service
+    container_name: radarr
+    image: ghcr.io/hotio/radarr:latest
+    logging:
+      driver: json-file
+    networks:
+      - default
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DATA}/radarr/config:/config
+      - ${RAID}/shared:/data
+
+  sonarr:
+    extends:
+      file: compose.common.yml
+      service: hotio-service
+    container_name: sonarr
+    image: ghcr.io/hotio/sonarr:latest
+    logging:
+      driver: json-file
+    networks:
+      - default
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DATA}/sonarr/config:/config
+      - ${RAID}/shared:/data
+
+  bazarr:
+    extends:
+      file: compose.common.yml
+      service: hotio-service
+    container_name: bazarr
+    image: ghcr.io/hotio/bazarr:nightly
+    logging:
+      driver: json-file
+    networks:
+      - default
+    depends_on:
+      - whisperasr
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DATA}/bazarr/config:/config
+      - ${RAID}/shared/media:/data/media
+
+  whisperasr:
+    extends:
+      file: compose.common.yml
+      service: gpu-service
+    image: onerahmet/openai-whisper-asr-webservice:latest-gpu
+    container_name: whisperasr
+    restart: unless-stopped
+    environment:
+      ASR_ENGINE: faster_whisper
+      ASR_MODEL: large-v3
+      ASR_DEVICE: cuda
+      ASR_QUANTIZATION: float16
+    networks:
+      - default
+
+  overseerr:
+    extends:
+      file: compose.common.yml
+      service: hotio-service
+    image: ghcr.io/hotio/overseerr:latest
+    container_name: overseerr
+    environment:
+      LOG_LEVEL: debug
+      PUID: ${UID}
+      PGID: ${GID}
+      TZ: ${TZ}
+      UMASK: "002"
+    networks:
+      - default
+    volumes:
+      - ${DATA}/overseerr/config:/app/config
+
+  prowlarr:
+    extends:
+      file: compose.common.yml
+      service: common-service
+    container_name: prowlarr
+    image: ghcr.io/hotio/prowlarr:latest
+    environment:
+      PUID: ${UID}
+      PGID: ${GID}
+      TZ: ${TZ}
+      UMASK: "002"
+    networks:
+      - default
+    volumes:
+      - ${DATA}/prowlarr/config:/config
