@@ -48,6 +48,7 @@ services:
       - ${DATA}/qbittorrent/config:/config
       - ${RAID}/shared/torrents:/data/torrents
       - ${DATA}/qbittorrent/VueTorrent:/vuetorrent
+      - ${DATA}/qbittorrent/iQbit/release:/iqbit
     depends_on:
       gluetun:
         condition: service_healthy
