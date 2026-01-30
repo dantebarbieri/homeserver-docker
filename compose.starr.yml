@@ -100,13 +100,10 @@ services:
   prowlarr:
     extends:
       file: compose.common.yml
-      service: common-service
+      service: hotio-service
     container_name: prowlarr
     image: ghcr.io/hotio/prowlarr:latest
     environment:
-      PUID: ${UID}
-      PGID: ${GID}
-      TZ: ${TZ}
       UMASK: "002"
     networks:
       - default

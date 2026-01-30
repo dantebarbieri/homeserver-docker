@@ -85,7 +85,6 @@ services:
     depends_on:
       suwayomi_postgres:
         condition: service_healthy
-        restart: true
     networks:
       - default
       - suwayomi
