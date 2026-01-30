@@ -89,8 +89,6 @@ services:
       service: hotio-service
     container_name: sabnzbd
     image: ghcr.io/hotio/sabnzbd:latest
-    logging:
-      driver: json-file
     networks:
       - default
     volumes:

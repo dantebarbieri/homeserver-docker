@@ -24,8 +24,6 @@ services:
       service: hotio-service
     container_name: radarr
     image: ghcr.io/hotio/radarr:latest
-    logging:
-      driver: json-file
     networks:
       - default
     volumes:
@@ -39,8 +37,6 @@ services:
       service: hotio-service
     container_name: sonarr
     image: ghcr.io/hotio/sonarr:latest
-    logging:
-      driver: json-file
     networks:
       - default
     volumes:
@@ -54,8 +50,6 @@ services:
       service: hotio-service
     container_name: bazarr
     image: ghcr.io/hotio/bazarr:nightly
-    logging:
-      driver: json-file
     networks:
       - default
     depends_on:
