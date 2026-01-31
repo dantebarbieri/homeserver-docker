@@ -21,8 +21,6 @@ services:
       ORIGIN: https://travel.danteb.com
       DATABASE_PATH: /app/data/cache.db
       TRUST_PROXY: "true"
-      AERODATABOX_API_KEY: ${AERODATABOX_API_KEY:-}
-      AERODATABOX_HOST: ${AERODATABOX_HOST:-aerodatabox.p.rapidapi.com}
     volumes:
       - ${DATA}/travel-planner:/app/data
     networks:
