@@ -1,7 +1,30 @@
 # Web hosting services
 # Uncomment services as needed
 
-services: {}
+services:
+  travel-planner:
+    extends:
+      file: compose.common.yml
+      service: common-service
+    build:
+      context: ../../travel-planner
+      dockerfile: Dockerfile
+    container_name: travel-planner
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOST: 0.0.0.0
+      ORIGIN: https://travel.danteb.com
+      DATABASE_PATH: /app/data/cache.db
+      TRUST_PROXY: "true"
+      AERODATABOX_API_KEY: ${AERODATABOX_API_KEY:-}
+      AERODATABOX_HOST: ${AERODATABOX_HOST:-aerodatabox.p.rapidapi.com}
+    volumes:
+      - ${DATA}/travel-planner:/app/data
+    networks:
+      default:
+        aliases:
+          - travel-planner
 
   # admin.danteb.com:
   #   build:
