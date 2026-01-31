@@ -13,8 +13,7 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-    env_file:
-      - ../../travel-planner/.env
+    env_file: ../../travel-planner/.env
     environment:
       NODE_ENV: production
       PORT: 3000
