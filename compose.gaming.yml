@@ -6,7 +6,7 @@ services:
     extends:
       file: compose.common.yml
       service: common-service
-    image: deinfreu/hytale-server:experimental
+    image: deinfreu/hytale-server:latest
     container_name: hytale-server
     tty: true
     stdin_open: true
