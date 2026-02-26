@@ -39,7 +39,10 @@ services:
       file: compose.common.yml
       service: gpu-service
     container_name: jellyfin
-    image: jellyfin/jellyfin:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.jellyfin
+    image: jellyfin-finity:latest
     restart: unless-stopped
     user: "${UID}:${GID}"
     environment:
@@ -53,6 +56,7 @@ services:
       - ${DATA}/jellyfin/cache:/cache
       - /tmp/jellyfin:/config/transcodes
       - ${RAID}/shared/media:/data/media:ro
+      - ${DATA}/jellyfin/webroot/list.txt:/usr/share/jellyfin/web/list.txt:ro
 
   komga:
     extends:
