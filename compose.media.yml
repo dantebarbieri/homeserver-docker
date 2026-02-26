@@ -50,6 +50,7 @@ services:
       - default
     volumes:
       - ${DATA}/jellyfin/config:/config
+      - ${DATA}/jellyfin/cache:/cache
       - /tmp/jellyfin:/config/transcodes
       - ${RAID}/shared/media:/data/media:ro
 
