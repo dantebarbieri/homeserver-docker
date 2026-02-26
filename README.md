@@ -13,7 +13,7 @@ Docker Compose configuration for my home server, organized into logical service 
 ├── compose.downloads.yml   # VPN/torrent stack, SABnzbd, Flaresolverr
 ├── compose.gaming.yml      # Game servers (Minecraft, Hytale, Satisfactory)
 ├── compose.immich.yml      # Immich photo management stack
-├── compose.media.yml       # Media consumption (Plex, Komga, Suwayomi)
+├── compose.media.yml       # Media consumption (Plex, Jellyfin, Komga, Suwayomi)
 ├── compose.searxng.yml     # SearXNG search engine stack
 ├── compose.starr.yml       # *arr apps + Overseerr + Whisper ASR
 ├── compose.utilities.yml   # Utilities (Vaultwarden, Syncthing, ntfy)
@@ -49,7 +49,7 @@ docker compose -f compose.gaming.yml up -d
 | **Downloads** | vpn-netns, gluetun, qbittorrent, qbit-port-sync, sabnzbd, flaresolverr |
 | **Gaming** | minecraft-server, rlcraft-minecraft-server, hytale-server, satisfactory-server |
 | **Immich** | immich-server, immich-machine-learning, immich-redis, immich-postgres |
-| **Media** | plex, komga, komf, suwayomi, suwayomi_postgres |
+| **Media** | plex, jellyfin, komga, komf, suwayomi, suwayomi_postgres |
 | **SearXNG** | searxng, searxng_redis |
 | **Starr** | radarr, sonarr, bazarr, prowlarr, recyclarr, overseerr, whisperasr |
 | **Utilities** | vaultwarden, syncthing, ntfy |
