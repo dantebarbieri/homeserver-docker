@@ -57,7 +57,7 @@ services:
       - ${DATA}/jellyfin/cache:/cache
       - /tmp/jellyfin:/config/transcodes
       - ${RAID}/shared/media:/data/media:ro
-      - ${DATA}/jellyfin/webroot/list.txt:/usr/share/jellyfin/web/list.txt:ro
+      - ${DATA}/jellyfin/webroot/list.txt:/jellyfin/jellyfin-web/list.txt:ro
 
   komga:
     extends:
