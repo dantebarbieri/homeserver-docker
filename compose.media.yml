@@ -65,7 +65,8 @@ services:
       file: compose.common.yml
       service: common-service
     container_name: arm-server
-    image: ghcr.io/beeequeue/arm-server:latest
+    build: https://github.com/BeeeQueue/arm-server.git
+    image: arm-server:latest
     networks:
       - anime
 
