@@ -52,12 +52,22 @@ services:
       NVIDIA_DRIVER_CAPABILITIES: compute,video,utility
     networks:
       - default
+      - anime
     volumes:
       - ${DATA}/jellyfin/config:/config
       - ${DATA}/jellyfin/cache:/cache
       - /tmp/jellyfin:/config/transcodes
       - ${RAID}/shared/media:/data/media:ro
       - ${DATA}/jellyfin/webroot/list.txt:/jellyfin/jellyfin-web/list.txt:ro
+
+  arm-server:
+    extends:
+      file: compose.common.yml
+      service: common-service
+    container_name: arm-server
+    image: ghcr.io/beeequeue/arm-server:latest
+    networks:
+      - anime
 
   komga:
     extends:
@@ -143,6 +153,7 @@ services:
       start_period: 30s
 
 networks:
+  anime:
   komics:
   suwayomi:
 
