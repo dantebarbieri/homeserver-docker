@@ -1,5 +1,5 @@
 # Starr apps and media management
-# radarr, sonarr, bazarr, prowlarr, recyclarr, overseerr, whisperasr
+# radarr, sonarr, bazarr, prowlarr, recyclarr, overseerr, whisperasr, tdarr
 
 services:
   recyclarr:
@@ -103,3 +103,44 @@ services:
       - default
     volumes:
       - ${DATA}/prowlarr/config:/config
+
+  tdarr:
+    extends:
+      file: compose.common.yml
+      service: gpu-service
+    container_name: tdarr
+    image: ghcr.io/haveagitgat/tdarr:latest
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    environment:
+      PUID: ${UID}
+      PGID: ${GID}
+      TZ: ${TZ}
+      UMASK_SET: "002"
+      serverIP: 0.0.0.0
+      serverPort: 8266
+      webUIPort: 8265
+      internalNode: true
+      inContainer: true
+      ffmpegVersion: 7
+      nodeName: HomeServer
+      auth: true
+      maxLogSizeMB: 10
+      # CPU-only workers to start — adjust in the web UI later
+      transcodecpuWorkers: 2
+      transcodegpuWorkers: 0
+      healthcheckcpuWorkers: 2
+      healthcheckgpuWorkers: 0
+    networks:
+      - default
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DATA}/tdarr/server:/app/server
+      - ${DATA}/tdarr/configs:/app/configs
+      - ${DATA}/tdarr/logs:/app/logs
+      - ${RAID}/shared/media:/data/media
+      - /tmp/tdarr_transcode_cache:/temp
