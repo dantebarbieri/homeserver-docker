@@ -20,8 +20,6 @@ services:
       PROD: TRUE
       DEBUG: FALSE
       TZ: ${TZ}
-    networks:
-      - gaming
     volumes:
       - hytale-server:/home/container
       - /etc/machine-id:/etc/machine-id:ro
@@ -58,8 +56,6 @@ services:
       MAX_TICK_TIME: -1
       LOG_TIMESTAMP: true
       LOG_IPS: true
-    networks:
-      - gaming
     volumes:
       - minecraft-server:/data
       - ${DATA}/minecraft/assets:/data/assets
@@ -93,8 +89,6 @@ services:
       TYPE: "AUTO_CURSEFORGE"
       CF_API_KEY: ${CF_API_KEY}
       CF_SLUG: rlcraft
-    networks:
-      - gaming
     volumes:
       - rlcraft-minecraft-server:/data
 
@@ -114,8 +108,6 @@ services:
       PGID: ${GID}
       MAXPLAYERS: 4
       STEAMBETA: false
-    networks:
-      - gaming
     volumes:
       - ${DATA}/satisfactory-server:/config
     deploy:
@@ -129,6 +121,3 @@ volumes:
   hytale-server:
   minecraft-server:
   rlcraft-minecraft-server:
-
-networks:
-  gaming:
