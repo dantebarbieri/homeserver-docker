@@ -25,7 +25,12 @@ services:
       - PGID=${GID}
     volumes:
       - ${DATA}/syncthing:/var/syncthing
-    network_mode: host
+    ports:
+      - "22000:22000/tcp"   # sync protocol
+      - "22000:22000/udp"   # QUIC sync protocol
+      - "21027:21027/udp"   # discovery broadcast
+    networks:
+      - proxy
     healthcheck:
       test: curl -fkLsS -m 2 127.0.0.1:8384/rest/noauth/health | grep -o --color=never OK || exit 1
       interval: 1m
