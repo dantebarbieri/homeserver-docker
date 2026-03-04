@@ -28,7 +28,7 @@ services:
       NVIDIA_VISIBLE_DEVICES: all
       NVIDIA_DRIVER_CAPABILITIES: compute,video,utility
     networks:
-      - default
+      - proxy
     volumes:
       - ${DATA}/plex/config:/config
       - /tmp/plex:/transcode
@@ -51,7 +51,7 @@ services:
       NVIDIA_VISIBLE_DEVICES: all
       NVIDIA_DRIVER_CAPABILITIES: all
     networks:
-      - default
+      - proxy
       - anime
     volumes:
       - ${DATA}/jellyfin/config:/config
@@ -81,7 +81,7 @@ services:
       JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=85
       TZ: ${TZ}
     networks:
-      - default
+      - proxy
       - komics
     volumes:
       - ${DATA}/komga/config:/config
@@ -122,8 +122,9 @@ services:
       suwayomi_postgres:
         condition: service_healthy
     networks:
-      - default
+      - proxy
       - suwayomi
+      - flaresolverr
     volumes:
       - ${RAID}/shared/reading:/home/suwayomi/.local/share/Tachidesk/downloads
       - ${DATA}/suwayomi/config:/home/suwayomi/.local/share/Tachidesk
@@ -154,9 +155,11 @@ services:
       start_period: 30s
 
 networks:
+  proxy:
   anime:
   komics:
   suwayomi:
+  flaresolverr:
 
 volumes:
   suwayomi-storage:

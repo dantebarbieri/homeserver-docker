@@ -6,7 +6,7 @@ services:
     image: registry.k8s.io/pause:3.9
     container_name: vpn-netns
     networks:
-      default:
+      proxy:
         aliases:
           - qbittorrent
     restart: always
@@ -90,7 +90,7 @@ services:
     container_name: sabnzbd
     image: ghcr.io/hotio/sabnzbd:latest
     networks:
-      - default
+      - proxy
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${DATA}/sabnzbd/config:/config
@@ -110,7 +110,7 @@ services:
       PGID: ${GID}
       TZ: ${TZ}
     networks:
-      - default
+      - flaresolverr
 
   qbit-manage:
     extends:
@@ -148,3 +148,7 @@ services:
 
 volumes:
   gluetun-tmp:
+
+networks:
+  proxy:
+  flaresolverr:

@@ -9,7 +9,7 @@ services:
     image: vaultwarden/server:latest
     container_name: vaultwarden
     networks:
-      - default
+      - proxy
     volumes:
       - vw-data:/data
 
@@ -52,7 +52,10 @@ services:
       - ${DATA}/ntfy/config:/etc/ntfy
       - ${DATA}/ntfy/cache:/var/cache/ntfy
     networks:
-      - default
+      - proxy
 
 volumes:
   vw-data:
+
+networks:
+  proxy:

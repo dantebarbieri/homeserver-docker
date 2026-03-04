@@ -16,9 +16,9 @@ include:
   - compose.utilities.yml
   - compose.websites.yml
 
-# Shared network used by most services
+# Network for services behind the reverse proxy (Nginx Proxy Manager)
 networks:
-  default:
+  proxy:
     enable_ipv6: true
 
 # Centralized secrets for security visibility

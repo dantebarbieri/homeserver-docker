@@ -21,7 +21,7 @@ services:
       DEBUG: FALSE
       TZ: ${TZ}
     networks:
-      - default
+      - gaming
     volumes:
       - hytale-server:/home/container
       - /etc/machine-id:/etc/machine-id:ro
@@ -59,7 +59,7 @@ services:
       LOG_TIMESTAMP: true
       LOG_IPS: true
     networks:
-      - default
+      - gaming
     volumes:
       - minecraft-server:/data
       - ${DATA}/minecraft/assets:/data/assets
@@ -94,7 +94,7 @@ services:
       CF_API_KEY: ${CF_API_KEY}
       CF_SLUG: rlcraft
     networks:
-      - default
+      - gaming
     volumes:
       - rlcraft-minecraft-server:/data
 
@@ -115,7 +115,7 @@ services:
       MAXPLAYERS: 4
       STEAMBETA: false
     networks:
-      - default
+      - gaming
     volumes:
       - ${DATA}/satisfactory-server:/config
     deploy:
@@ -129,3 +129,6 @@ volumes:
   hytale-server:
   minecraft-server:
   rlcraft-minecraft-server:
+
+networks:
+  gaming:

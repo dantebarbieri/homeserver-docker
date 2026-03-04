@@ -9,7 +9,7 @@ services:
       file: hwaccel.transcoding.yml
       service: nvenc
     networks:
-      - default
+      - proxy
       - immich
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
@@ -84,6 +84,7 @@ services:
       start_period: 5m
 
 networks:
+  proxy:
   immich:
 
 volumes:

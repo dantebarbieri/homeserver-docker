@@ -13,7 +13,7 @@ services:
       PGID: ${GID}
       TZ: ${TZ}
     networks:
-      - default
+      - starr
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${DATA}/recyclarr/config:/config
@@ -25,7 +25,8 @@ services:
     container_name: radarr
     image: ghcr.io/hotio/radarr:latest
     networks:
-      - default
+      - proxy
+      - starr
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${DATA}/radarr/config:/config
@@ -38,7 +39,8 @@ services:
     container_name: sonarr
     image: ghcr.io/hotio/sonarr:latest
     networks:
-      - default
+      - proxy
+      - starr
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${DATA}/sonarr/config:/config
@@ -51,7 +53,8 @@ services:
     container_name: bazarr
     image: ghcr.io/hotio/bazarr:nightly
     networks:
-      - default
+      - proxy
+      - starr
     depends_on:
       - whisperasr
     volumes:
@@ -72,7 +75,7 @@ services:
       ASR_DEVICE: cuda
       ASR_QUANTIZATION: float16
     networks:
-      - default
+      - starr
 
   overseerr:
     extends:
@@ -87,7 +90,8 @@ services:
       TZ: ${TZ}
       UMASK: "002"
     networks:
-      - default
+      - proxy
+      - starr
     volumes:
       - ${DATA}/overseerr/config:/app/config
 
@@ -100,7 +104,9 @@ services:
     environment:
       UMASK: "002"
     networks:
-      - default
+      - proxy
+      - starr
+      - flaresolverr
     volumes:
       - ${DATA}/prowlarr/config:/config
 
@@ -138,7 +144,7 @@ services:
       healthcheckcpuWorkers: 2
       healthcheckgpuWorkers: 0
     networks:
-      - default
+      - proxy
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${DATA}/tdarr/server:/app/server
@@ -146,3 +152,8 @@ services:
       - ${DATA}/tdarr/logs:/app/logs
       - ${RAID}/shared/media:/data/media
       - /tmp/tdarr_transcode_cache:/temp
+
+networks:
+  proxy:
+  starr:
+  flaresolverr:

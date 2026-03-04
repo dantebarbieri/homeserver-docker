@@ -21,7 +21,7 @@ services:
     container_name: searxng
     image: docker.io/searxng/searxng:latest
     networks:
-      - default
+      - proxy
       - searxng
     volumes:
       - ${DATA}/searxng/config:/etc/searxng:rw
@@ -31,6 +31,7 @@ services:
     cap_add: [CHOWN, SETGID, SETUID]
 
 networks:
+  proxy:
   searxng:
 
 volumes:

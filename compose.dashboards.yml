@@ -9,7 +9,7 @@ services:
     environment:
       INIT_ASSETS: 1
     networks:
-      - default
+      - proxy
     volumes:
       - ${DATA}/homer:/www/assets
 
@@ -22,7 +22,7 @@ services:
     restart: unless-stopped
     privileged: true
     networks:
-      - default
+      - proxy
     volumes:
       - /:/mnt/host:ro
     environment:
@@ -34,3 +34,6 @@ services:
       DASHDOT_USE_NETWORK_INTERFACE: bond0
       DASHDOT_FS_DEVICE_FILTER: nvme1n1,sda,sdb,sdc,sdd,sde,sdf,sdg,sdh,sdi,sdj,sdk,sdl
       DASHDOT_FS_VIRTUAL_MOUNTS: /dev/mapper/vg_redundant-lv_data
+
+networks:
+  proxy:

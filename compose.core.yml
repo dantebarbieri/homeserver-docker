@@ -13,7 +13,7 @@ services:
       - "81:81"
       - "443:443"
     networks:
-      - default
+      - proxy
     volumes:
       - ${DATA}/nginxproxymanager/data:/data
       - ${DATA}/nginxproxymanager/letsencrypt:/etc/letsencrypt
@@ -27,8 +27,6 @@ services:
     container_name: ddclient
     volumes:
       - ${DATA}/ddclient/config:/config
-    networks:
-      - default
 
   endlessh:
     extends:
@@ -39,3 +37,6 @@ services:
     ports:
       - "22:2222"
     command: ["-logtostderr", "-v=1"]
+
+networks:
+  proxy:

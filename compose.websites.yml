@@ -24,7 +24,7 @@ services:
     volumes:
       - ${DATA}/travel-planner:/app/data
     networks:
-      default:
+      proxy:
         aliases:
           - travel-planner
 
@@ -38,7 +38,7 @@ services:
   #     NODE_ENV: production
   #     PORT: 3000
   #   networks:
-  #     default:
+  #     proxy:
   #       aliases:
   #         - admin-danteb
   #   volumes:
@@ -54,7 +54,7 @@ services:
   #     NODE_ENV: production
   #     PORT: 3000
   #   networks:
-  #     default:
+  #     proxy:
   #       aliases:
   #         - danteb
 
@@ -63,7 +63,7 @@ services:
   #   container_name: adguardhome
   #   restart: unless-stopped
   #   networks:
-  #     - default
+  #     - proxy
   #   volumes:
   #     - ${DATA}/adguardhome/workdir:/opt/adguardhome/work
   #     - ${DATA}/adguardhome/confdir:/opt/adguardhome/conf
@@ -79,3 +79,6 @@ services:
   #     - "5443:5443/tcp"
   #     - "5443:5443/udp"
   #     - "6060:6060/tcp"
+
+networks:
+  proxy:
