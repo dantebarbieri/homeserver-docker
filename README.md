@@ -50,7 +50,7 @@ docker compose -f compose.gaming.yml up -d
 | **Downloads** | vpn-netns, gluetun, qbittorrent, qbit-port-sync, sabnzbd, flaresolverr |
 | **Gaming** | minecraft-server, rlcraft-minecraft-server, hytale-server, satisfactory-server |
 | **Immich** | immich-server, immich-machine-learning, immich-redis, immich-postgres |
-| **Matrix** | synapse, synapse_postgres, element, coturn |
+| **Matrix** | synapse, synapse_postgres, element, coturn, livekit, lk-jwt-service |
 | **Media** | plex, jellyfin, komga, komf, suwayomi, suwayomi_postgres |
 | **SearXNG** | searxng, searxng_redis |
 | **Starr** | radarr, sonarr, bazarr, prowlarr, recyclarr, overseerr, whisperasr |
@@ -79,5 +79,7 @@ services:
 ## Matrix Setup
 
 See [MATRIX.md](MATRIX.md) for the full Matrix stack setup guide (Synapse, Element, Coturn, PostgreSQL).
+
+See [MATRIX-RTC.md](MATRIX-RTC.md) for adding voice/video call support via LiveKit (MatrixRTC).
 
 Share [MATRIX-ONBOARDING.md](MATRIX-ONBOARDING.md) with new users to help them create an account and join.

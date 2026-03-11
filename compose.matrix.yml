@@ -1,5 +1,5 @@
 # Matrix communication stack
-# synapse, synapse_postgres, element, coturn
+# synapse, synapse_postgres, element, coturn, livekit, lk-jwt-service
 
 services:
   synapse:
@@ -63,6 +63,39 @@ services:
       - ${DATA}/coturn/turnserver.conf:/etc/turnserver.conf:ro
       - ${DATA}/nginxproxymanager/letsencrypt/live/npm-2/fullchain.pem:/etc/coturn/fullchain.pem:ro
       - ${DATA}/nginxproxymanager/letsencrypt/live/npm-2/privkey.pem:/etc/coturn/privkey.pem:ro
+
+  livekit:
+    extends:
+      file: compose.common.yml
+      service: common-service
+    container_name: livekit
+    image: livekit/livekit-server:latest
+    command: --config /etc/livekit.yaml
+    networks:
+      - matrix
+      - proxy
+    ports:
+      - 7881:7881/tcp
+      - 20000-21000:20000-21000/udp
+    volumes:
+      - ${DATA}/livekit/config.yaml:/etc/livekit.yaml:ro
+
+  lk-jwt-service:
+    extends:
+      file: compose.common.yml
+      service: common-service
+    container_name: lk-jwt-service
+    image: ghcr.io/element-hq/lk-jwt-service:0.4.1
+    networks:
+      - matrix
+      - proxy
+    environment:
+      LIVEKIT_URL: ws://livekit:7880
+      LIVEKIT_KEY: ${LIVEKIT_API_KEY}
+      LIVEKIT_SECRET: ${LIVEKIT_API_SECRET}
+      LIVEKIT_FULL_ACCESS_HOMESERVERS: ${SYNAPSE_SERVER_NAME}
+    depends_on:
+      - livekit
 
 networks:
   proxy:
