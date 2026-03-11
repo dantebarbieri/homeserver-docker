@@ -57,11 +57,12 @@ port: 7880
 rtc:
   # ICE/TCP fallback port — must be forwarded on router
   tcp_port: 7881
-  # UDP port range for media streams — must be forwarded on router
-  # Each call participant uses ~2 ports. This range supports ~500 concurrent participants.
-  # Deliberately below Coturn's relay range (49152-65535) to avoid port conflicts.
-  port_range_start: 20000
-  port_range_end: 21000
+  # UDP mux: route all UDP media through a small set of ports instead of a large range.
+  # Best practice for Docker — avoids massive iptables overhead from publishing thousands of ports.
+  # The LiveKit config reference recommends "a range of ports ≥ the number of CPU cores/threads"
+  # for best performance. For a 32-thread CPU: 7882-7913 (32 ports).
+  # https://github.com/livekit/livekit/blob/master/config-sample.yaml
+  udp_port: 7882-7913
   # Use STUN to discover public IP automatically (recommended for dynamic IPs)
   use_external_ip: true
   # If STUN discovery fails, comment out use_external_ip and set your public IP explicitly:
@@ -246,20 +247,20 @@ Forward the following ports on your router to `192.168.1.100`:
 | Port | Protocol | Service | Why |
 |------|----------|---------|-----|
 | `7881` | TCP | LiveKit RTC | ICE/TCP fallback for clients that can't use UDP (corporate firewalls) |
-| `20000-21000` | UDP | LiveKit RTC | Primary WebRTC media transport (audio/video streams) |
+| `7882-7913` | UDP | LiveKit RTC | UDP-muxed WebRTC media transport (audio/video streams) |
 
-> **Port range choice:** LiveKit's range (`20000-21000`) is deliberately below Coturn's relay range (`49152-65535` configured in [MATRIX.md](MATRIX.md)). Neither service requires specific port numbers — any range works — but they must not overlap since Coturn runs with `network_mode: host` and binds directly to the host. This split gives LiveKit 1,001 ports (~500 concurrent participants) and Coturn the full RFC 5766 standard ephemeral range (16,384 ports). If you adjust either range, update it in the [LiveKit config](#livekit-configuration), `compose.matrix.yml`, and your router's port forwarding rules.
+> **UDP mux (Docker best practice):** Instead of publishing thousands of UDP ports through Docker's bridge network (which creates one iptables rule per port), LiveKit's `rtc.udp_port` option multiplexes all UDP media through a small fixed set of ports. This is the recommended approach for Docker deployments — it dramatically reduces iptables overhead and container startup time. The [LiveKit config reference](https://github.com/livekit/livekit/blob/master/config-sample.yaml) recommends **a port count ≥ the number of CPU threads** for best performance, so each thread can handle its own socket. For a 32-thread CPU (e.g., AMD EPYC 7313P with 16 cores / 32 threads), that means 32 ports: `7882-7913`. Scale this to your own hardware — e.g., 8 threads → 8 ports, 64 threads → 64 ports.
 >
-> **Why Coturn's large range is fine:** Unlike LiveKit, Coturn uses `network_mode: host` — it binds directly to the host network stack with zero Docker iptables overhead. Having 16,384 open relay ports costs nothing extra compared to having 50. The TURN protocol ([RFC 5766](https://www.rfc-editor.org/rfc/rfc5766)) requires one port per relay allocation with no mux alternative, but `network_mode: host` makes this a non-issue. The overhead concern only applies to Docker bridge port publishing, which is why LiveKit's range is kept smaller.
+> **Why Coturn's large range is fine:** Unlike LiveKit, Coturn uses `network_mode: host` — it binds directly to the host network stack with zero Docker iptables overhead. Having 16,384 open relay ports (`49152-65535`) costs nothing extra compared to having 50. The TURN protocol ([RFC 5766](https://www.rfc-editor.org/rfc/rfc5766)) requires one port per relay allocation with no mux alternative, but `network_mode: host` makes this a non-issue. The overhead concern only applies to Docker bridge port publishing, which is exactly why LiveKit uses UDP mux instead.
 >
-> **Alternative — UDP mux:** For minimal Docker port publishing overhead, LiveKit can route all UDP media through a small set of ports via the `rtc.udp_port` option. This replaces `port_range_start`/`port_range_end` entirely. The [LiveKit config reference](https://github.com/livekit/livekit/blob/master/config-sample.yaml) recommends "a range of ports ≥ the number of vCPUs" for best performance. For an AMD EPYC 7313P (16 cores / 32 threads), that would be `udp_port: 7882-7913` (32 ports). If using UDP mux, update both the LiveKit config and `compose.matrix.yml` ports accordingly.
+> **Alternative — large port range:** If you prefer the traditional approach (e.g., for non-Docker deployments or `network_mode: host`), replace `udp_port` in the [LiveKit config](#livekit-configuration) with `port_range_start: 20000` / `port_range_end: 21000` and update `compose.matrix.yml` ports to `20000-21000:20000-21000/udp`. Each participant uses ~2 ports, so 1,001 ports supports ~500 concurrent participants. Keep this range below Coturn's relay range to avoid conflicts.
 
 **Already forwarded** (no changes needed):
 - `443/TCP` — LiveKit's WebSocket signalling (`wss://livekit.danteb.com/livekit/sfu`) flows through HTTPS, which is already forwarded to Nginx Proxy Manager
 - `3478/TCP+UDP`, `5349/TCP+UDP` — Coturn TURN/STUN (if previously configured per [MATRIX.md](MATRIX.md))
 - `49152-65535/UDP` — Coturn relay ports (if previously configured, does not overlap with LiveKit's range)
 
-> **Note:** The UDP port range (`20000-21000`) provides capacity for ~500 simultaneous call participants. Each participant uses approximately 2 UDP ports. See the [LiveKit deployment docs](https://docs.livekit.io/home/self-hosting/deployment/) and [ports reference](https://docs.livekit.io/transport/self-hosting/ports-firewall/) for resource guidance.
+> **Note:** The 32 UDP-muxed ports (`7882-7913`) are not a per-participant limit — LiveKit multiplexes many streams per port. The port count affects parallelism, not capacity. See the [LiveKit deployment docs](https://docs.livekit.io/home/self-hosting/deployment/) and [ports reference](https://docs.livekit.io/transport/self-hosting/ports-firewall/) for resource guidance.
 
 ## Startup
 
@@ -310,7 +311,7 @@ After starting the stack, verify each component in order:
 - Ensure no trailing slash issues in `livekit_service_url` — it should be `https://livekit.danteb.com/livekit/jwt` (no trailing slash).
 
 **Calls connect but no audio/video (one-way or silent):**
-- Confirm ports `7881/TCP` and `40100-40200/UDP` are forwarded on your router. Use an online port checker to verify.
+- Confirm ports `7881/TCP` and `7882-7913/UDP` are forwarded on your router. Use an online port checker to verify.
 - Check LiveKit's `node_ip` or `use_external_ip` setting. If your public IP is wrong, remote clients can't send media to the SFU.
 - Review LiveKit logs: `docker logs livekit 2>&1 | grep -i "error\|warn"`.
 

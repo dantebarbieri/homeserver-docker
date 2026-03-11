@@ -76,7 +76,7 @@ services:
       - proxy
     ports:
       - 7881:7881/tcp
-      - 20000-21000:20000-21000/udp
+      - 7882-7913:7882-7913/udp
     volumes:
       - ${DATA}/livekit/config.yaml:/etc/livekit.yaml:ro
 
