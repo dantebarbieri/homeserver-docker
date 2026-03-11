@@ -10,6 +10,7 @@ include:
   - compose.downloads.yml
   - compose.gaming.yml
   - compose.immich.yml
+  - compose.matrix.yml
   - compose.media.yml
   - compose.searxng.yml
   - compose.starr.yml

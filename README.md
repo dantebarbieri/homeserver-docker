@@ -13,6 +13,7 @@ Docker Compose configuration for my home server, organized into logical service 
 ├── compose.downloads.yml   # VPN/torrent stack, SABnzbd, Flaresolverr
 ├── compose.gaming.yml      # Game servers (Minecraft, Hytale, Satisfactory)
 ├── compose.immich.yml      # Immich photo management stack
+├── compose.matrix.yml      # Matrix communication stack (Synapse, Element, Coturn)
 ├── compose.media.yml       # Media consumption (Plex, Jellyfin, Komga, Suwayomi)
 ├── compose.searxng.yml     # SearXNG search engine stack
 ├── compose.starr.yml       # *arr apps + Overseerr + Whisper ASR
@@ -49,6 +50,7 @@ docker compose -f compose.gaming.yml up -d
 | **Downloads** | vpn-netns, gluetun, qbittorrent, qbit-port-sync, sabnzbd, flaresolverr |
 | **Gaming** | minecraft-server, rlcraft-minecraft-server, hytale-server, satisfactory-server |
 | **Immich** | immich-server, immich-machine-learning, immich-redis, immich-postgres |
+| **Matrix** | synapse, synapse_postgres, element, coturn |
 | **Media** | plex, jellyfin, komga, komf, suwayomi, suwayomi_postgres |
 | **SearXNG** | searxng, searxng_redis |
 | **Starr** | radarr, sonarr, bazarr, prowlarr, recyclarr, overseerr, whisperasr |
@@ -73,3 +75,9 @@ services:
     image: ghcr.io/hotio/radarr:latest
     # ...
 ```
+
+## Matrix Setup
+
+See [MATRIX.md](MATRIX.md) for the full Matrix stack setup guide (Synapse, Element, Coturn, PostgreSQL).
+
+Share [MATRIX-ONBOARDING.md](MATRIX-ONBOARDING.md) with new users to help them create an account and join.
