@@ -90,7 +90,7 @@ services:
       - matrix
       - proxy
     environment:
-      LIVEKIT_URL: ws://livekit:7880
+      LIVEKIT_URL: wss://livekit.danteb.com/livekit/sfu
       LIVEKIT_KEY: ${LIVEKIT_API_KEY}
       LIVEKIT_SECRET: ${LIVEKIT_API_SECRET}
       LIVEKIT_FULL_ACCESS_HOMESERVERS: ${SYNAPSE_SERVER_NAME}
