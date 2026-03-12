@@ -66,7 +66,7 @@ rtc:
   # Use STUN to discover public IP automatically (recommended for dynamic IPs)
   use_external_ip: true
   # If STUN discovery fails, comment out use_external_ip and set your public IP explicitly:
-  # node_ip: 24.55.20.222
+  # node_ip: YOUR_PUBLIC_IP
 
 # Disable automatic room creation so lk-jwt-service controls access
 # Required by lk-jwt-service: https://github.com/element-hq/lk-jwt-service#%EF%B8%8F-configuration
@@ -86,7 +86,7 @@ keys:
   devkey: "<LIVEKIT_API_SECRET from .env>"
 ```
 
-> **NAT:** If STUN discovery doesn't work, replace `use_external_ip: true` with `node_ip: 24.55.20.222` (your server's public IP). Without a correct public IP, remote users won't be able to connect to calls. See the [LiveKit config reference](https://github.com/livekit/livekit/blob/master/config-sample.yaml) for all available options.
+> **NAT:** If STUN discovery doesn't work, replace `use_external_ip: true` with `node_ip: YOUR_PUBLIC_IP` (your server's actual public IP). Without a correct public IP, remote users won't be able to connect to calls. See the [LiveKit config reference](https://github.com/livekit/livekit/blob/master/config-sample.yaml) for all available options.
 >
 > **Keys:** The `keys` section maps API key names to their secrets. Replace `<LIVEKIT_API_SECRET from .env>` with the same secret value you set in `.env`. The key name (`devkey`) must match `LIVEKIT_API_KEY` in `.env`. There is no security benefit to changing `devkey` to something else — it is a public identifier (like a username), not a secret. All security comes from `LIVEKIT_API_SECRET`.
 
@@ -139,23 +139,21 @@ The [Element Call self-hosting guide](https://github.com/element-hq/element-call
 
 ### DNS Record
 
-No DNS changes are needed if you already have a wildcard record (`*.danteb.com`) pointing to your domain. The subdomain `livekit.danteb.com` will resolve automatically.
-
-If you don't have a wildcard, create an A or CNAME record:
+If you have a wildcard record (`*.example.com`), the subdomain `livekit.example.com` will resolve automatically. Otherwise, create a record:
 ```
-livekit.danteb.com    CNAME    danteb.com
+livekit.example.com    CNAME    example.com
 ```
 
 ### Create Proxy Host
 
 In Nginx Proxy Manager, add a new proxy host:
 
-- **Domain:** `livekit.danteb.com`
+- **Domain:** `livekit.example.com`
 - **Scheme:** `http`
 - **Forward Hostname/IP:** `livekit`
 - **Forward Port:** `7880`
 - **WebSocket Support:** ☑ Enabled
-- **SSL:** Select your existing `*.danteb.com` wildcard certificate, enable Force SSL
+- **SSL:** Select your certificate, enable Force SSL
 
 ### Advanced Configuration
 
@@ -196,19 +194,19 @@ location ^~ /livekit/sfu/ {
 
 The `.well-known/matrix/client` response must include `org.matrix.msc4143.rtc_foci` to announce the MatrixRTC backend to clients. This is defined in [MSC4143](https://github.com/matrix-org/matrix-spec-proposals/pull/4143) and documented in the [Element Call self-hosting guide](https://github.com/element-hq/element-call/blob/livekit/docs/self-hosting.md#matrixrtc-backend-announcement) and the [lk-jwt-service README](https://github.com/element-hq/lk-jwt-service#-do-not-forget-to-update-your-matrix-sites-well-knownmatrixclient).
 
-Update the Advanced config on the **`danteb.com`** proxy host in Nginx Proxy Manager. Replace the existing `/.well-known/matrix/client` block:
+Update the Advanced config on your **base domain** (`example.com`) proxy host in Nginx Proxy Manager. Replace the existing `/.well-known/matrix/client` block:
 
 ```nginx
 location /.well-known/matrix/server {
     default_type application/json;
     add_header Access-Control-Allow-Origin *;
-    return 200 '{"m.server": "matrix.danteb.com:443"}';
+    return 200 '{"m.server": "matrix.example.com:443"}';
 }
 
 location /.well-known/matrix/client {
     default_type application/json;
     add_header Access-Control-Allow-Origin *;
-    return 200 '{"m.homeserver": {"base_url": "https://matrix.danteb.com"}, "org.matrix.msc4143.rtc_foci": [{"type": "livekit", "livekit_service_url": "https://livekit.danteb.com/livekit/jwt"}]}';
+    return 200 '{"m.homeserver": {"base_url": "https://matrix.example.com"}, "org.matrix.msc4143.rtc_foci": [{"type": "livekit", "livekit_service_url": "https://livekit.example.com/livekit/jwt"}]}';
 }
 ```
 
@@ -216,12 +214,12 @@ For readability, the `/.well-known/matrix/client` response expands to:
 ```json
 {
   "m.homeserver": {
-    "base_url": "https://matrix.danteb.com"
+    "base_url": "https://matrix.example.com"
   },
   "org.matrix.msc4143.rtc_foci": [
     {
       "type": "livekit",
-      "livekit_service_url": "https://livekit.danteb.com/livekit/jwt"
+      "livekit_service_url": "https://livekit.example.com/livekit/jwt"
     }
   ]
 }
@@ -235,28 +233,28 @@ As belt-and-suspenders, also add the RTC foci to `homeserver.yaml`. This ensures
 extra_well_known_client_content:
   org.matrix.msc4143.rtc_foci:
     - type: livekit
-      livekit_service_url: "https://livekit.danteb.com/livekit/jwt"
+      livekit_service_url: "https://livekit.example.com/livekit/jwt"
 ```
 
 > **Note:** This requires `public_baseurl` to be set in `homeserver.yaml` for Synapse to serve any `.well-known` response. See the [Synapse `extra_well_known_client_content` docs](https://element-hq.github.io/synapse/latest/usage/configuration/config_documentation.html#extra_well_known_client_content) for reference. If `public_baseurl` is not set, only the NPM-served `.well-known` above will be used — which is sufficient on its own.
 
 ## Port Forwarding
 
-Forward the following ports on your router to `192.168.1.100`:
+Forward the following ports on your router to your server's local IP:
 
 | Port | Protocol | Service | Why |
 |------|----------|---------|-----|
 | `7881` | TCP | LiveKit RTC | ICE/TCP fallback for clients that can't use UDP (corporate firewalls) |
 | `7882-7913` | UDP | LiveKit RTC | UDP-muxed WebRTC media transport (audio/video streams) |
 
-> **UDP mux (Docker best practice):** Instead of publishing thousands of UDP ports through Docker's bridge network (which creates one iptables rule per port), LiveKit's `rtc.udp_port` option multiplexes all UDP media through a small fixed set of ports. This is the recommended approach for Docker deployments — it dramatically reduces iptables overhead and container startup time. The [LiveKit config reference](https://github.com/livekit/livekit/blob/master/config-sample.yaml) recommends **a port count ≥ the number of CPU threads** for best performance, so each thread can handle its own socket. For a 32-thread CPU (e.g., AMD EPYC 7313P with 16 cores / 32 threads), that means 32 ports: `7882-7913`. Scale this to your own hardware — e.g., 8 threads → 8 ports, 64 threads → 64 ports.
+> **UDP mux (Docker best practice):** Instead of publishing thousands of UDP ports through Docker's bridge network (which creates one iptables rule per port), LiveKit's `rtc.udp_port` option multiplexes all UDP media through a small fixed set of ports. This is the recommended approach for Docker deployments — it dramatically reduces iptables overhead and container startup time. The [LiveKit config reference](https://github.com/livekit/livekit/blob/master/config-sample.yaml) recommends **a port count ≥ the number of CPU threads** for best performance, so each thread can handle its own socket. Scale to your hardware — e.g., 8 threads → 8 ports (`7882-7889`), 32 threads → 32 ports (`7882-7913`), etc.
 >
 > **Why Coturn's large range is fine:** Unlike LiveKit, Coturn uses `network_mode: host` — it binds directly to the host network stack with zero Docker iptables overhead. Having 16,384 open relay ports (`49152-65535`) costs nothing extra compared to having 50. The TURN protocol ([RFC 5766](https://www.rfc-editor.org/rfc/rfc5766)) requires one port per relay allocation with no mux alternative, but `network_mode: host` makes this a non-issue. The overhead concern only applies to Docker bridge port publishing, which is exactly why LiveKit uses UDP mux instead.
 >
 > **Alternative — large port range:** If you prefer the traditional approach (e.g., for non-Docker deployments or `network_mode: host`), replace `udp_port` in the [LiveKit config](#livekit-configuration) with `port_range_start: 20000` / `port_range_end: 21000` and update `compose.matrix.yml` ports to `20000-21000:20000-21000/udp`. Each participant uses ~2 ports, so 1,001 ports supports ~500 concurrent participants. Keep this range below Coturn's relay range to avoid conflicts.
 
 **Already forwarded** (no changes needed):
-- `443/TCP` — LiveKit's WebSocket signalling (`wss://livekit.danteb.com/livekit/sfu`) flows through HTTPS, which is already forwarded to Nginx Proxy Manager
+- `443/TCP` — LiveKit's WebSocket signalling (`wss://livekit.example.com/livekit/sfu`) flows through HTTPS, which is already forwarded to Nginx Proxy Manager
 - `3478/TCP+UDP`, `5349/TCP+UDP` — Coturn TURN/STUN (if previously configured per [MATRIX.md](MATRIX.md))
 - `49152-65535/UDP` — Coturn relay ports (if previously configured, does not overlap with LiveKit's range)
 
@@ -282,13 +280,13 @@ After starting the stack, verify each component in order:
 
 1. **lk-jwt-service health check:**
    ```bash
-   curl -s https://livekit.danteb.com/livekit/jwt/healthz
+   curl -s https://livekit.example.com/livekit/jwt/healthz
    ```
    Should return a `200 OK` response.
 
 2. **`.well-known/matrix/client` includes RTC foci:**
    ```bash
-   curl -s https://danteb.com/.well-known/matrix/client | python3 -m json.tool
+   curl -s https://example.com/.well-known/matrix/client | python3 -m json.tool
    ```
    Confirm the response contains `org.matrix.msc4143.rtc_foci` with your `livekit_service_url`.
 
@@ -308,7 +306,7 @@ After starting the stack, verify each component in order:
 **`MISSING_MATRIX_RTC_FOCUS` still appears:**
 - Verify `.well-known/matrix/client` returns the `org.matrix.msc4143.rtc_foci` field. Clients cache this response — try a hard refresh or clear app cache.
 - Check CORS headers: the response must include `Access-Control-Allow-Origin: *`. Test with `curl -v`.
-- Ensure no trailing slash issues in `livekit_service_url` — it should be `https://livekit.danteb.com/livekit/jwt` (no trailing slash).
+- Ensure no trailing slash issues in `livekit_service_url` — it should be `https://livekit.example.com/livekit/jwt` (no trailing slash).
 
 **Calls connect but no audio/video (one-way or silent):**
 - Confirm ports `7881/TCP` and `7882-7913/UDP` are forwarded on your router. Use an online port checker to verify.
@@ -316,7 +314,7 @@ After starting the stack, verify each component in order:
 - Review LiveKit logs: `docker logs livekit 2>&1 | grep -i "error\|warn"`.
 
 **WebSocket connection fails (502 or timeout):**
-- Verify WebSocket Support is enabled on the `livekit.danteb.com` proxy host in NPM.
+- Verify WebSocket Support is enabled on the `livekit.example.com` proxy host in NPM.
 - Check that the Advanced config `proxy_pass` URLs include the trailing `/`.
 - Confirm the `livekit` and `lk-jwt-service` containers are on the `proxy` network: `docker network inspect proxy`.
 

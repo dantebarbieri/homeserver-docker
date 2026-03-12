@@ -81,5 +81,3 @@ services:
 See [MATRIX.md](MATRIX.md) for the full Matrix stack setup guide (Synapse, Element, Coturn, PostgreSQL).
 
 See [MATRIX-RTC.md](MATRIX-RTC.md) for adding voice/video call support via LiveKit (MatrixRTC).
-
-Share [MATRIX-ONBOARDING.md](MATRIX-ONBOARDING.md) with new users to help them create an account and join.

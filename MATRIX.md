@@ -161,14 +161,14 @@ In Nginx Proxy Manager, create a proxy host for `example.com` that serves these 
 
 ## Registration
 
-By default, Synapse disables public registration. To let users create accounts (e.g., for inviting book club members), add to `homeserver.yaml`:
+By default, Synapse disables public registration. To allow invite-only sign-ups, add to `homeserver.yaml`:
 
 ```yaml
 enable_registration: true
 registration_requires_token: true
 ```
 
-Then generate a registration token via the Admin API:
+Then generate a registration token via the [Admin API](https://element-hq.github.io/synapse/latest/usage/administration/admin_api/registration_tokens.html):
 ```bash
 docker exec synapse curl -s -X POST \
   -H "Authorization: Bearer <admin_access_token>" \
@@ -179,7 +179,7 @@ docker exec synapse curl -s -X POST \
 
 Share the returned token with invitees — they enter it during account creation in Element.
 
-> **Admin access token:** Log into Element as the admin user → **Settings** → **Help & About** → **Advanced** → copy the Access Token.
+> **Admin access token:** Log into Element as the admin user → **Settings** → **Help & About** → **Advanced** → copy the Access Token. See the [Synapse Admin API docs](https://element-hq.github.io/synapse/latest/usage/administration/admin_api/) for more details.
 
 ## Resources
 
