@@ -7,7 +7,7 @@ services:
       file: compose.common.yml
       service: common-service
     container_name: recyclarr
-    image: ghcr.io/recyclarr/recyclarr:latest
+    image: ghcr.io/recyclarr/recyclarr:8
     environment:
       PUID: ${UID}
       PGID: ${GID}
