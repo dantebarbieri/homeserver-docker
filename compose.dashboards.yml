@@ -9,8 +9,6 @@ services:
     image: ghcr.io/gethomepage/homepage:latest
     container_name: homepage
     environment:
-      PUID: ${UID}
-      PGID: ${GID}
       HOMEPAGE_ALLOWED_HOSTS: ${HOMEPAGE_ALLOWED_HOSTS}
       HOMEPAGE_VAR_PLEX_TOKEN: ${HOMEPAGE_VAR_PLEX_TOKEN}
       HOMEPAGE_VAR_JELLYFIN_KEY: ${HOMEPAGE_VAR_JELLYFIN_KEY}
@@ -28,13 +26,11 @@ services:
       HOMEPAGE_VAR_TDARR_KEY: ${HOMEPAGE_VAR_TDARR_KEY}
       HOMEPAGE_VAR_QBIT_USER: ${HOMEPAGE_VAR_QBIT_USER}
       HOMEPAGE_VAR_QBIT_PASS: ${HOMEPAGE_VAR_QBIT_PASS}
-    group_add:
-      - "${DOCKER_GID}"
     networks:
       - proxy
     volumes:
       - ${DATA}/homepage/config:/app/config
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/run/docker.sock:/var/run/docker.sock
 
   dashdot:
     extends:
