@@ -9,7 +9,7 @@ Docker Compose configuration for my home server, organized into logical service 
 ├── compose.common.yml      # Shared templates (extends only, not included)
 ├── compose.core.yml        # Core infrastructure (nginx proxy, ddclient, endlessh)
 ├── compose.auth.yml        # Authelia authentication stack
-├── compose.dashboards.yml  # Homer, Dashdot
+├── compose.dashboards.yml  # Homer, Homepage, Dashdot
 ├── compose.downloads.yml   # VPN/torrent stack, SABnzbd, Flaresolverr
 ├── compose.gaming.yml      # Game servers (Minecraft, Hytale, Satisfactory)
 ├── compose.immich.yml      # Immich photo management stack
@@ -46,7 +46,7 @@ docker compose -f compose.gaming.yml up -d
 |----------|----------|
 | **Core** | nginxproxymanager, ddclient, endlessh |
 | **Auth** | authelia, authelia_postgres, authelia_redis |
-| **Dashboards** | homer, dashdot |
+| **Dashboards** | homer, homepage, dashdot |
 | **Downloads** | vpn-netns, gluetun, qbittorrent, qbit-port-sync, sabnzbd, flaresolverr |
 | **Gaming** | minecraft-server, rlcraft-minecraft-server, hytale-server, satisfactory-server |
 | **Immich** | immich-server, immich-machine-learning, immich-redis, immich-postgres |
@@ -81,3 +81,7 @@ services:
 See [MATRIX.md](MATRIX.md) for the full Matrix stack setup guide (Synapse, Element, Coturn, PostgreSQL).
 
 See [MATRIX-RTC.md](MATRIX-RTC.md) for adding voice/video call support via LiveKit (MatrixRTC).
+
+## Service Catalogue
+
+All services are catalogued and monitored in the [Homepage](https://github.com/dantebarbieri/homepage) dashboard. The previous [Homer](https://github.com/dantebarbieri/homeserver-homer) dashboard is archived and no longer in use.

@@ -1,5 +1,5 @@
 # Dashboard and monitoring services
-# homer, dashdot
+# homer, homepage, dashdot
 
 services:
   homer:
@@ -12,6 +12,36 @@ services:
       - proxy
     volumes:
       - ${DATA}/homer:/www/assets
+
+  homepage:
+    extends:
+      file: compose.common.yml
+      service: common-service
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: homepage
+    environment:
+      PUID: ${UID}
+      PGID: ${GID}
+      # Set these env vars to enable service widgets (API keys, credentials).
+      # Obtain keys from each service's settings page.
+      # HOMEPAGE_VAR_PLEX_TOKEN:
+      # HOMEPAGE_VAR_JELLYFIN_KEY:
+      # HOMEPAGE_VAR_OVERSEERR_KEY:
+      # HOMEPAGE_VAR_IMMICH_KEY:
+      # HOMEPAGE_VAR_KOMGA_USER:
+      # HOMEPAGE_VAR_KOMGA_PASS:
+      # HOMEPAGE_VAR_RADARR_KEY:
+      # HOMEPAGE_VAR_SONARR_KEY:
+      # HOMEPAGE_VAR_BAZARR_KEY:
+      # HOMEPAGE_VAR_PROWLARR_KEY:
+      # HOMEPAGE_VAR_SABNZBD_KEY:
+      # HOMEPAGE_VAR_NPM_USER:
+      # HOMEPAGE_VAR_NPM_PASS:
+    networks:
+      - proxy
+    volumes:
+      - ${DATA}/homepage/config:/app/config
+      - /var/run/docker.sock:/var/run/docker.sock:ro
 
   dashdot:
     extends:
