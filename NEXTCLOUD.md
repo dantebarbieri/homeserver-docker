@@ -67,7 +67,9 @@ Application files (PHP code, config, custom apps) live at `${DATA}/nextcloud/htm
    ```bash
    mkdir -p ${DATA}/nextcloud/html
    mkdir -p ${RAID}/nextcloud
+   chown -R 33:33 ${RAID}/nextcloud
    ```
+   > **Note:** The Nextcloud container runs as `www-data` (uid 33). The data directory must be writable by this user or installation will fail with "Cannot create or write into the data directory".
 
 2. **Set your secrets** in `.env` (see [Generating Secrets](#generating-secrets)):
    ```bash
@@ -89,6 +91,34 @@ Application files (PHP code, config, custom apps) live at `${DATA}/nextcloud/htm
    Wait until you see `AH00094: Command line: 'apache2 -D FOREGROUND'` indicating Apache is ready.
 
 5. **Set background jobs to Cron.** After the first login, go to **Administration Settings** → **Basic settings** → set Background jobs to **Cron**. The `nextcloud_cron` container handles execution automatically.
+
+6. **Resolve first-run warnings.** The Administration → Overview page will show several warnings after a fresh install. Run these commands to resolve them:
+
+   **Fix missing database indices:**
+   ```bash
+   docker exec -it --user www-data nextcloud php occ db:add-missing-indices
+   ```
+
+   **Run mimetype migrations:**
+   ```bash
+   docker exec -it --user www-data nextcloud php occ maintenance:repair --include-expensive
+   ```
+
+   **Create a local config file** at `${DATA}/nextcloud/html/config/local.config.php` to set the maintenance window, phone region, and local memory cache:
+   ```php
+   <?php
+   $CONFIG = [
+     'maintenance_window_start' => 1,         // 1:00 AM UTC — adjust to your low-usage hours
+     'default_phone_region' => 'US',           // ISO 3166-1 country code
+     'memcache.local' => '\OC\Memcache\APCu',
+   ];
+   ```
+
+   > **Informational notices you can safely ignore:**
+   > - **AppAPI deploy daemon** — Only needed for External Apps (ExApps). Safe to ignore, or disable the AppAPI app in **Administration Settings** → **Apps** if you don't plan to use ExApps.
+   > - **Two-factor authentication** — Nextcloud recommends enforcing 2FA but it's optional. Configure it in **Administration Settings** → **Security** when ready.
+   > - **Email server** — Configure SMTP in **Administration Settings** → **Basic settings** when you're ready to set up email notifications.
+   > - **Server identifier** — Only relevant for multi-server deployments. Ignore for single-server setups.
 
 ## Reverse Proxy (Nginx Proxy Manager)
 
@@ -231,7 +261,7 @@ After starting the stack, verify each component:
    Navigate to `https://cloud.example.com` — you should see the Nextcloud login page (or the dashboard if auto-configured with admin credentials).
 
 3. **Admin panel checks:**
-   Go to **Administration Settings** → **Overview**. Resolve any warnings shown (common first-run warnings are addressed by the NPM Advanced configuration above).
+   Go to **Administration Settings** → **Overview**. All warnings from step 6 should be resolved. If any remain, revisit [Initial Setup](#initial-setup) step 6.
 
 4. **CalDAV/CardDAV discovery:**
    ```bash
@@ -263,13 +293,7 @@ After starting the stack, verify each component:
 **Slow performance:**
 - Confirm Redis is running: `docker exec nextcloud_redis redis-cli ping` should return `PONG`.
 - Verify background jobs are running: **Administration Settings** → **Basic settings** → Background jobs should show "Cron" with a recent "Last job ran" timestamp.
-- Consider enabling APCu as local cache by adding to `${DATA}/nextcloud/html/config/local.config.php`:
-  ```php
-  <?php
-  $CONFIG = [
-    'memcache.local' => '\OC\Memcache\APCu',
-  ];
-  ```
+- Verify APCu local cache is enabled (configured in step 6's `local.config.php`). If missing, add `'memcache.local' => '\OC\Memcache\APCu'` to `${DATA}/nextcloud/html/config/local.config.php`.
 
 **Permission errors on data directory:**
 - The Nextcloud container runs as `www-data` (uid 33). Ensure the data mount has appropriate permissions:
