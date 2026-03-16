@@ -61,6 +61,25 @@ User files are stored on the RAID array at `${RAID}/nextcloud`, mounted as `/dat
 
 Application files (PHP code, config, custom apps) live at `${DATA}/nextcloud/html`.
 
+### Trusted Domains
+
+Nextcloud rejects requests whose HTTP `Host` header doesn't match a trusted domain, returning HTTP 400. Two domains must be trusted:
+
+- **External hostname** (e.g., `cloud.example.com`) — for browser and client access
+- **Internal Docker hostname** (`nextcloud`) — for other containers on the Docker network (e.g., Homepage widgets)
+
+The compose file sets both via `NEXTCLOUD_TRUSTED_DOMAINS`, but this **only takes effect on first install**. To view or modify trusted domains on a running instance:
+
+```bash
+# List current trusted domains
+docker exec -it --user www-data nextcloud php occ config:system:get trusted_domains
+
+# Add a domain at a specific index (check existing indices first to avoid overwriting!)
+docker exec -it --user www-data nextcloud php occ config:system:set trusted_domains <index> --value=<domain>
+```
+
+> **⚠️ Warning:** Each index holds one domain. Setting an existing index **silently overwrites** the previous value. Always list current domains first to find the next available index.
+
 ## Initial Setup
 
 1. **Create data directories:**
@@ -90,9 +109,18 @@ Application files (PHP code, config, custom apps) live at `${DATA}/nextcloud/htm
    ```
    Wait until you see `AH00094: Command line: 'apache2 -D FOREGROUND'` indicating Apache is ready.
 
-5. **Set background jobs to Cron.** After the first login, go to **Administration Settings** → **Basic settings** → set Background jobs to **Cron**. The `nextcloud_cron` container handles execution automatically.
+5. **Verify trusted domains.** Confirm both the external hostname and internal Docker hostname are trusted:
+   ```bash
+   docker exec -it --user www-data nextcloud php occ config:system:get trusted_domains
+   ```
+   You should see your external hostname (e.g., `cloud.example.com`) and `nextcloud`. If either is missing, add it at the next available index (see [Trusted Domains](#trusted-domains)):
+   ```bash
+   docker exec -it --user www-data nextcloud php occ config:system:set trusted_domains 2 --value=nextcloud
+   ```
 
-6. **Resolve first-run warnings.** The Administration → Overview page will show several warnings after a fresh install. Run these commands to resolve them:
+6. **Set background jobs to Cron.** After the first login, go to **Administration Settings** → **Basic settings** → set Background jobs to **Cron**. The `nextcloud_cron` container handles execution automatically.
+
+7. **Resolve first-run warnings.** The Administration → Overview page will show several warnings after a fresh install. Run these commands to resolve them:
 
    **Fix missing database indices:**
    ```bash
@@ -108,7 +136,7 @@ Application files (PHP code, config, custom apps) live at `${DATA}/nextcloud/htm
    ```php
    <?php
    $CONFIG = [
-     'maintenance_window_start' => 1,         // 1:00 AM UTC — adjust to your low-usage hours
+     'maintenance_window_start' => 8,         // 3:00 AM CDT / 2:00 AM CST
      'default_phone_region' => 'US',           // ISO 3166-1 country code
      'memcache.local' => '\OC\Memcache\APCu',
    ];
@@ -261,7 +289,7 @@ After starting the stack, verify each component:
    Navigate to `https://cloud.example.com` — you should see the Nextcloud login page (or the dashboard if auto-configured with admin credentials).
 
 3. **Admin panel checks:**
-   Go to **Administration Settings** → **Overview**. All warnings from step 6 should be resolved. If any remain, revisit [Initial Setup](#initial-setup) step 6.
+   Go to **Administration Settings** → **Overview**. All warnings from step 7 should be resolved. If any remain, revisit [Initial Setup](#initial-setup) step 7.
 
 4. **CalDAV/CardDAV discovery:**
    ```bash
@@ -283,11 +311,15 @@ After starting the stack, verify each component:
 - Verify `NEXTCLOUD_HOSTNAME` in `.env` matches the domain you're accessing. If you need to fix it after first run, edit `${DATA}/nextcloud/html/config/config.php` and update the `trusted_domains` array.
 
 **Homepage widget returns HTTP 400:**
-- Other services (like Homepage) connect to Nextcloud via the internal Docker hostname `nextcloud`, which must be in the trusted domains list. The compose file includes it automatically via `NEXTCLOUD_TRUSTED_DOMAINS`, but this only takes effect on first install. To add it to an existing instance:
+- Other services (like Homepage) connect to Nextcloud via the internal Docker hostname `nextcloud`, which must be in the trusted domains list. The compose file includes it automatically via `NEXTCLOUD_TRUSTED_DOMAINS`, but this only takes effect on first install. To add it to an existing instance, first list current domains to find the next available index:
   ```bash
-  docker exec -it --user www-data nextcloud php occ config:system:set trusted_domains 1 --value=nextcloud
+  docker exec -it --user www-data nextcloud php occ config:system:get trusted_domains
   ```
-  Adjust the index (`1`, `2`, etc.) to avoid overwriting existing entries — check current values with `docker exec -it --user www-data nextcloud php occ config:system:get trusted_domains`.
+  Then add `nextcloud` at the next unused index (e.g., `2` if indices `0` and `1` are taken):
+  ```bash
+  docker exec -it --user www-data nextcloud php occ config:system:set trusted_domains 2 --value=nextcloud
+  ```
+  > **⚠️ Warning:** Each index can only hold one domain. Using an existing index **overwrites** that domain silently. Always check current values first to avoid accidentally removing your external hostname.
 
 **".well-known" warnings in admin panel:**
 - Ensure the Advanced nginx config (see [Advanced Configuration](#advanced-configuration)) is applied to your NPM proxy host. Test with `curl -sI https://cloud.example.com/.well-known/caldav`.
@@ -300,7 +332,7 @@ After starting the stack, verify each component:
 **Slow performance:**
 - Confirm Redis is running: `docker exec nextcloud_redis redis-cli ping` should return `PONG`.
 - Verify background jobs are running: **Administration Settings** → **Basic settings** → Background jobs should show "Cron" with a recent "Last job ran" timestamp.
-- Verify APCu local cache is enabled (configured in step 6's `local.config.php`). If missing, add `'memcache.local' => '\OC\Memcache\APCu'` to `${DATA}/nextcloud/html/config/local.config.php`.
+- Verify APCu local cache is enabled (configured in step 7's `local.config.php`). If missing, add `'memcache.local' => '\OC\Memcache\APCu'` to `${DATA}/nextcloud/html/config/local.config.php`.
 
 **Permission errors on data directory:**
 - The Nextcloud container runs as `www-data` (uid 33). Ensure the data mount has appropriate permissions:
