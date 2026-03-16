@@ -1,18 +1,7 @@
 # Dashboard and monitoring services
-# homer, homepage, dashdot
+# homepage, dashdot
 
 services:
-  homer:
-    image: b4bz/homer
-    container_name: homer
-    user: "${UID}:${GID}"
-    environment:
-      INIT_ASSETS: 1
-    networks:
-      - proxy
-    volumes:
-      - ${DATA}/homer:/www/assets
-
   homepage:
     extends:
       file: compose.common.yml
