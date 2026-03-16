@@ -282,6 +282,13 @@ After starting the stack, verify each component:
 **"Access through untrusted domain" error:**
 - Verify `NEXTCLOUD_HOSTNAME` in `.env` matches the domain you're accessing. If you need to fix it after first run, edit `${DATA}/nextcloud/html/config/config.php` and update the `trusted_domains` array.
 
+**Homepage widget returns HTTP 400:**
+- Other services (like Homepage) connect to Nextcloud via the internal Docker hostname `nextcloud`, which must be in the trusted domains list. The compose file includes it automatically via `NEXTCLOUD_TRUSTED_DOMAINS`, but this only takes effect on first install. To add it to an existing instance:
+  ```bash
+  docker exec -it --user www-data nextcloud php occ config:system:set trusted_domains 1 --value=nextcloud
+  ```
+  Adjust the index (`1`, `2`, etc.) to avoid overwriting existing entries — check current values with `docker exec -it --user www-data nextcloud php occ config:system:get trusted_domains`.
+
 **".well-known" warnings in admin panel:**
 - Ensure the Advanced nginx config (see [Advanced Configuration](#advanced-configuration)) is applied to your NPM proxy host. Test with `curl -sI https://cloud.example.com/.well-known/caldav`.
 
