@@ -14,6 +14,7 @@ Docker Compose configuration for my home server, organized into logical service 
 ├── compose.gaming.yml      # Game servers (Minecraft, Hytale, Satisfactory)
 ├── compose.immich.yml      # Immich photo management stack
 ├── compose.matrix.yml      # Matrix communication stack (Synapse, Element, Coturn)
+├── compose.nextcloud.yml   # Nextcloud cloud storage stack
 ├── compose.media.yml       # Media consumption (Plex, Jellyfin, Komga, Suwayomi)
 ├── compose.searxng.yml     # SearXNG search engine stack
 ├── compose.starr.yml       # *arr apps + Overseerr + Whisper ASR
@@ -51,6 +52,7 @@ docker compose -f compose.gaming.yml up -d
 | **Gaming** | minecraft-server, rlcraft-minecraft-server, hytale-server, satisfactory-server |
 | **Immich** | immich-server, immich-machine-learning, immich-redis, immich-postgres |
 | **Matrix** | synapse, synapse_postgres, element, coturn, livekit, lk-jwt-service |
+| **Nextcloud** | nextcloud, nextcloud_cron, nextcloud_postgres, nextcloud_redis |
 | **Media** | plex, jellyfin, komga, komf, suwayomi, suwayomi_postgres |
 | **SearXNG** | searxng, searxng_redis |
 | **Starr** | radarr, sonarr, bazarr, prowlarr, recyclarr, overseerr, whisperasr |
@@ -81,6 +83,10 @@ services:
 See [MATRIX.md](MATRIX.md) for the full Matrix stack setup guide (Synapse, Element, Coturn, PostgreSQL).
 
 See [MATRIX-RTC.md](MATRIX-RTC.md) for adding voice/video call support via LiveKit (MatrixRTC).
+
+## Nextcloud Setup
+
+See [NEXTCLOUD.md](NEXTCLOUD.md) for the full Nextcloud cloud storage setup guide (PostgreSQL, Redis, cron, reverse proxy).
 
 ## Service Catalogue
 

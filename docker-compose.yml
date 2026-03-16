@@ -12,6 +12,7 @@ include:
   - compose.immich.yml
   - compose.matrix.yml
   - compose.media.yml
+  - compose.nextcloud.yml
   - compose.searxng.yml
   - compose.starr.yml
   - compose.utilities.yml
