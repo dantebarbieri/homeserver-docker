@@ -22,7 +22,7 @@ All services reference variables from `.env` (not committed; see `sample.env` fo
 - Backend/internal services that don't need proxying are isolated to purpose-specific internal networks shared only with the minimum set of services that need them:
   - `authelia` — authelia ↔ authelia_postgres, authelia_redis
   - `immich` — immich-server ↔ immich-machine-learning, immich-redis, immich-postgres
-  - `starr` — radarr, sonarr, bazarr, prowlarr, overseerr ↔ recyclarr, whisperasr
+  - `starr` — radarr, sonarr, bazarr, prowlarr, seerr ↔ recyclarr, whisperasr
   - `flaresolverr` — flaresolverr ↔ prowlarr, suwayomi (cross-stack)
   - `anime` — jellyfin ↔ arm-server
   - `komics` — komga ↔ komf

@@ -17,7 +17,7 @@ Docker Compose configuration for my home server, organized into logical service 
 ├── compose.nextcloud.yml   # Nextcloud cloud storage stack
 ├── compose.media.yml       # Media consumption (Plex, Jellyfin, Komga, Suwayomi)
 ├── compose.searxng.yml     # SearXNG search engine stack
-├── compose.starr.yml       # *arr apps + Overseerr + Whisper ASR
+├── compose.starr.yml       # *arr apps + Seerr + Whisper ASR
 ├── compose.utilities.yml   # Utilities (Vaultwarden, Syncthing, ntfy)
 ├── compose.websites.yml    # Web hosting (custom sites)
 ├── hwaccel.transcoding.yml # Hardware acceleration for transcoding
@@ -55,7 +55,7 @@ docker compose -f compose.gaming.yml up -d
 | **Nextcloud** | nextcloud, nextcloud_cron, nextcloud_postgres, nextcloud_redis |
 | **Media** | plex, jellyfin, komga, komf, suwayomi, suwayomi_postgres |
 | **SearXNG** | searxng, searxng_redis |
-| **Starr** | radarr, sonarr, bazarr, prowlarr, recyclarr, overseerr, whisperasr |
+| **Starr** | radarr, sonarr, bazarr, prowlarr, recyclarr, seerr, whisperasr |
 | **Utilities** | vaultwarden, syncthing, ntfy |
 | **Websites** | (custom web apps) |
 

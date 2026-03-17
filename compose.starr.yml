@@ -1,5 +1,5 @@
 # Starr apps and media management
-# radarr, sonarr, bazarr, prowlarr, recyclarr, overseerr, whisperasr, tdarr
+# radarr, sonarr, bazarr, prowlarr, recyclarr, seerr, whisperasr, tdarr
 
 services:
   recyclarr:
@@ -77,23 +77,20 @@ services:
     networks:
       - starr
 
-  overseerr:
+  seerr:
     extends:
       file: compose.common.yml
       service: hotio-service
-    image: ghcr.io/hotio/overseerr:latest
-    container_name: overseerr
+    image: ghcr.io/hotio/seerr:latest
+    container_name: seerr
     environment:
       LOG_LEVEL: debug
-      PUID: ${UID}
-      PGID: ${GID}
-      TZ: ${TZ}
       UMASK: "002"
     networks:
       - proxy
       - starr
     volumes:
-      - ${DATA}/overseerr/config:/app/config
+      - ${DATA}/seerr/config:/config
 
   prowlarr:
     extends:
