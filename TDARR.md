@@ -222,99 +222,55 @@ If this returns a JSON status object, the API is reachable.
 
 ### Step 2: Create TV libraries
 
-Create three TV libraries using the CRUDDB API.
+> **Important:** Libraries must be created via the **Tdarr web UI**, not the
+> CRUDDB API. The UI populates ~40+ required internal fields (schedule array,
+> decisionMaker, containerFilter, watcher config, etc.) that the API does not
+> auto-generate. Creating libraries via API with only a handful of fields
+> causes fatal crashes when Tdarr tries to scan.
 
-#### Library 1: TV Shows
+#### Delete broken API-created libraries (if any)
 
-```bash
-docker exec tdarr curl -s -X POST \
-  -H "Content-Type: application/json" \
-  -H "x-api-key: YOUR_TDARR_API_KEY" \
-  http://localhost:8265/api/v2/cruddb \
-  -d '{
-    "data": {
-      "collection": "LibrarySettingsJSONDB",
-      "mode": "insert",
-      "docID": "lib-tv-shows",
-      "obj": {
-        "_id": "lib-tv-shows",
-        "name": "TV Shows",
-        "folder": "/data/media/tv",
-        "folderWatch": true,
-        "scanOnStart": true,
-        "scanInterval": "6h",
-        "output": "",
-        "container": ".mkv",
-        "videoCodec": "hevc",
-        "processingOrder": "sizeDesc",
-        "enabled": true
-      }
-    }
-  }'
-```
-
-#### Library 2: Anime TV
+If you previously created libraries via the API and Tdarr is crashing, delete
+them first:
 
 ```bash
-docker exec tdarr curl -s -X POST \
-  -H "Content-Type: application/json" \
-  -H "x-api-key: YOUR_TDARR_API_KEY" \
-  http://localhost:8265/api/v2/cruddb \
-  -d '{
-    "data": {
-      "collection": "LibrarySettingsJSONDB",
-      "mode": "insert",
-      "docID": "lib-anime-tv",
-      "obj": {
-        "_id": "lib-anime-tv",
-        "name": "Anime TV",
-        "folder": "/data/media/anime/tv",
-        "folderWatch": true,
-        "scanOnStart": true,
-        "scanInterval": "6h",
-        "output": "",
-        "container": ".mkv",
-        "videoCodec": "hevc",
-        "processingOrder": "sizeDesc",
-        "enabled": true
-      }
-    }
-  }'
+for id in lib-tv-shows lib-anime-tv lib-indian-tv; do
+  docker exec tdarr curl -s -X POST \
+    -H "Content-Type: application/json" \
+    -H "x-api-key: YOUR_TDARR_API_KEY" \
+    http://localhost:8265/api/v2/cruddb \
+    -d "{\"data\":{\"collection\":\"LibrarySettingsJSONDB\",\"mode\":\"removeOne\",\"docID\":\"$id\"}}"
+  echo " -> deleted $id"
+done
 ```
 
-#### Library 3: Indian TV
+After deleting, restart the Tdarr container to clear the crashed state:
 
 ```bash
-docker exec tdarr curl -s -X POST \
-  -H "Content-Type: application/json" \
-  -H "x-api-key: YOUR_TDARR_API_KEY" \
-  http://localhost:8265/api/v2/cruddb \
-  -d '{
-    "data": {
-      "collection": "LibrarySettingsJSONDB",
-      "mode": "insert",
-      "docID": "lib-indian-tv",
-      "obj": {
-        "_id": "lib-indian-tv",
-        "name": "Indian TV",
-        "folder": "/data/media/indian/tv",
-        "folderWatch": true,
-        "scanOnStart": true,
-        "scanInterval": "6h",
-        "output": "",
-        "container": ".mkv",
-        "videoCodec": "hevc",
-        "processingOrder": "sizeDesc",
-        "enabled": true
-      }
-    }
-  }'
+docker restart tdarr
 ```
 
-### Step 3: Set library variables
+#### Create libraries via the UI
 
-Library variables allow the transcode flow to use different CRF values per
-library via Handlebars templating (`{{{args.userVariables.library.xxx}}}`).
+Open the Tdarr web UI → **Libraries** → **Library+** (top-left). Create each
+library with these settings:
+
+| Library | Source Folder (container path) |
+|---------|-------------------------------|
+| **TV Shows** | `/data/media/tv` |
+| **Anime TV** | `/data/media/anime/tv` |
+| **Indian TV** | `/data/media/indian/tv` |
+
+For each library, configure:
+
+1. **Source** tab → set the folder path from the table above
+2. **Transcode Options** tab:
+   - Enable **Process Library** and **Process Transcodes**
+   - Set **Container** to `.mkv`
+   - Set **Output Folder** to `.` (same as source — in-place)
+3. **Scan** tab:
+   - Enable **Folder Watching** if you want auto-detection of new files
+   - Set scan interval as desired (e.g. 6 hours)
 
 #### Verify libraries were created
 
@@ -331,6 +287,20 @@ docker exec tdarr curl -s -X POST \
   }' | python3 -m json.tool
 ```
 
+Note the `_id` for each library — Tdarr auto-generates short alphanumeric IDs
+(e.g. `a7j-e2VqO`). Use these IDs in subsequent API commands.
+
+### Step 3: Set library variables
+
+Library variables allow the transcode flow to use different CRF values per
+library via Handlebars templating (`{{{args.userVariables.library.xxx}}}`).
+
+Variables can be set either via the **UI** or **API**:
+
+- **UI:** Libraries → select library → **Variables** section → add key-value pairs
+- **API:** Use the CRUDDB update commands below (replace `LIBRARY_ID` with the
+  auto-generated `_id` from Step 2)
+
 #### TV Shows — CRF 18
 
 ```bash
@@ -342,7 +312,7 @@ docker exec tdarr curl -s -X POST \
     "data": {
       "collection": "LibrarySettingsJSONDB",
       "mode": "update",
-      "docID": "lib-tv-shows",
+      "docID": "LIBRARY_ID",
       "obj": {
         "userVariables": {
           "crf": "18",
@@ -355,47 +325,13 @@ docker exec tdarr curl -s -X POST \
 
 #### Anime TV — CRF 18
 
-```bash
-docker exec tdarr curl -s -X POST \
-  -H "Content-Type: application/json" \
-  -H "x-api-key: YOUR_TDARR_API_KEY" \
-  http://localhost:8265/api/v2/cruddb \
-  -d '{
-    "data": {
-      "collection": "LibrarySettingsJSONDB",
-      "mode": "update",
-      "docID": "lib-anime-tv",
-      "obj": {
-        "userVariables": {
-          "crf": "18",
-          "preset": "slow"
-        }
-      }
-    }
-  }'
-```
+Same command, replace `LIBRARY_ID` with the Anime TV library's `_id` and use
+`"crf": "18"`.
 
 #### Indian TV — CRF 20
 
-```bash
-docker exec tdarr curl -s -X POST \
-  -H "Content-Type: application/json" \
-  -H "x-api-key: YOUR_TDARR_API_KEY" \
-  http://localhost:8265/api/v2/cruddb \
-  -d '{
-    "data": {
-      "collection": "LibrarySettingsJSONDB",
-      "mode": "update",
-      "docID": "lib-indian-tv",
-      "obj": {
-        "userVariables": {
-          "crf": "20",
-          "preset": "slow"
-        }
-      }
-    }
-  }'
-```
+Same command, replace `LIBRARY_ID` with the Indian TV library's `_id` and use
+`"crf": "20"`.
 
 ### Step 4: Create the transcode flow
 
@@ -598,10 +534,11 @@ docker exec tdarr curl -s -X POST \
   }' | python3 -m json.tool
 ```
 
-Then assign to each library (replace `FLOW_ID`):
+Then assign to each library. Replace `FLOW_ID` with the flow `_id` from above,
+and `LIBRARY_ID` with each library's auto-generated `_id` from Step 2:
 
 ```bash
-# TV Shows
+# Repeat for each library ID
 docker exec tdarr curl -s -X POST \
   -H "Content-Type: application/json" \
   -H "x-api-key: YOUR_TDARR_API_KEY" \
@@ -610,35 +547,7 @@ docker exec tdarr curl -s -X POST \
     "data": {
       "collection": "LibrarySettingsJSONDB",
       "mode": "update",
-      "docID": "lib-tv-shows",
-      "obj": { "flow": "FLOW_ID" }
-    }
-  }'
-
-# Anime TV
-docker exec tdarr curl -s -X POST \
-  -H "Content-Type: application/json" \
-  -H "x-api-key: YOUR_TDARR_API_KEY" \
-  http://localhost:8265/api/v2/cruddb \
-  -d '{
-    "data": {
-      "collection": "LibrarySettingsJSONDB",
-      "mode": "update",
-      "docID": "lib-anime-tv",
-      "obj": { "flow": "FLOW_ID" }
-    }
-  }'
-
-# Indian TV
-docker exec tdarr curl -s -X POST \
-  -H "Content-Type: application/json" \
-  -H "x-api-key: YOUR_TDARR_API_KEY" \
-  http://localhost:8265/api/v2/cruddb \
-  -d '{
-    "data": {
-      "collection": "LibrarySettingsJSONDB",
-      "mode": "update",
-      "docID": "lib-indian-tv",
+      "docID": "LIBRARY_ID",
       "obj": { "flow": "FLOW_ID" }
     }
   }'
@@ -667,8 +576,19 @@ Follow the exact same pattern as TV libraries:
 
 ### Create movie libraries
 
+Create each library via the **Tdarr web UI** (Libraries → Library+):
+
+| Library | Source Folder (container path) | CRF |
+|---------|-------------------------------|-----|
+| **Movies** | `/data/media/movies` | 20 |
+| **Anime Movies** | `/data/media/anime/movies` | 18 |
+| **Indian Movies** | `/data/media/indian/movies` | 20 |
+
+After creating each library in the UI, set variables via API (replace
+`LIBRARY_ID` with the auto-generated `_id`):
+
 ```bash
-# Movies
+# Example for Movies — CRF 20
 docker exec tdarr curl -s -X POST \
   -H "Content-Type: application/json" \
   -H "x-api-key: YOUR_TDARR_API_KEY" \
@@ -676,79 +596,20 @@ docker exec tdarr curl -s -X POST \
   -d '{
     "data": {
       "collection": "LibrarySettingsJSONDB",
-      "mode": "insert",
-      "docID": "lib-movies",
+      "mode": "update",
+      "docID": "LIBRARY_ID",
       "obj": {
-        "_id": "lib-movies",
-        "name": "Movies",
-        "folder": "/data/media/movies",
-        "folderWatch": true,
-        "scanOnStart": true,
-        "scanInterval": "12h",
-        "output": "",
-        "container": ".mkv",
-        "videoCodec": "hevc",
-        "processingOrder": "sizeDesc",
-        "enabled": true,
-        "userVariables": { "crf": "20", "preset": "slow" }
-      }
-    }
-  }'
-
-# Anime Movies
-docker exec tdarr curl -s -X POST \
-  -H "Content-Type: application/json" \
-  -H "x-api-key: YOUR_TDARR_API_KEY" \
-  http://localhost:8265/api/v2/cruddb \
-  -d '{
-    "data": {
-      "collection": "LibrarySettingsJSONDB",
-      "mode": "insert",
-      "docID": "lib-anime-movies",
-      "obj": {
-        "_id": "lib-anime-movies",
-        "name": "Anime Movies",
-        "folder": "/data/media/anime/movies",
-        "folderWatch": true,
-        "scanOnStart": true,
-        "scanInterval": "12h",
-        "output": "",
-        "container": ".mkv",
-        "videoCodec": "hevc",
-        "processingOrder": "sizeDesc",
-        "enabled": true,
-        "userVariables": { "crf": "18", "preset": "slow" }
-      }
-    }
-  }'
-
-# Indian Movies
-docker exec tdarr curl -s -X POST \
-  -H "Content-Type: application/json" \
-  -H "x-api-key: YOUR_TDARR_API_KEY" \
-  http://localhost:8265/api/v2/cruddb \
-  -d '{
-    "data": {
-      "collection": "LibrarySettingsJSONDB",
-      "mode": "insert",
-      "docID": "lib-indian-movies",
-      "obj": {
-        "_id": "lib-indian-movies",
-        "name": "Indian Movies",
-        "folder": "/data/media/indian/movies",
-        "folderWatch": true,
-        "scanOnStart": true,
-        "scanInterval": "12h",
-        "output": "",
-        "container": ".mkv",
-        "videoCodec": "hevc",
-        "processingOrder": "sizeDesc",
-        "enabled": true,
-        "userVariables": { "crf": "20", "preset": "slow" }
+        "userVariables": {
+          "crf": "20",
+          "preset": "slow"
+        }
       }
     }
   }'
 ```
+
+Or set the variables directly in the UI: Libraries → select library →
+**Variables** section → add `crf` and `preset` keys.
 
 ### Create a movie transcode flow
 
