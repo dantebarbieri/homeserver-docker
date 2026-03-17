@@ -135,13 +135,13 @@ services:
       auth: true
       apiKey: ${TDARR_API_KEY}
       maxLogSizeMB: 10
-      # CPU-only workers to start — adjust in the web UI later
-      transcodecpuWorkers: 2
+      transcodecpuWorkers: 4
       transcodegpuWorkers: 0
-      healthcheckcpuWorkers: 2
+      healthcheckcpuWorkers: 4
       healthcheckgpuWorkers: 0
     networks:
       - proxy
+      - starr
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${DATA}/tdarr/server:/app/server
