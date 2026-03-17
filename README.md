@@ -55,7 +55,7 @@ docker compose -f compose.gaming.yml up -d
 | **Nextcloud** | nextcloud, nextcloud_cron, nextcloud_postgres, nextcloud_redis |
 | **Media** | plex, jellyfin, komga, komf, suwayomi, suwayomi_postgres |
 | **SearXNG** | searxng, searxng_redis |
-| **Starr** | radarr, sonarr, bazarr, prowlarr, recyclarr, seerr, whisperasr |
+| **Starr** | radarr, sonarr, bazarr, prowlarr, recyclarr, seerr, whisperasr, tdarr |
 | **Utilities** | vaultwarden, syncthing, ntfy |
 | **Websites** | (custom web apps) |
 
@@ -87,6 +87,10 @@ See [MATRIX-RTC.md](MATRIX-RTC.md) for adding voice/video call support via LiveK
 ## Nextcloud Setup
 
 See [NEXTCLOUD.md](NEXTCLOUD.md) for the full Nextcloud cloud storage setup guide (PostgreSQL, Redis, cron, reverse proxy).
+
+## Tdarr Setup
+
+See [TDARR.md](TDARR.md) for the full Tdarr configuration guide (HEVC compression, library setup, transcode flows, Sonarr/Radarr integration).
 
 ## Service Catalogue
 
