@@ -119,6 +119,7 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+    cpus: 12
     environment:
       PUID: ${UID}
       PGID: ${GID}

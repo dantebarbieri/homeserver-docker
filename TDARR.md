@@ -79,8 +79,8 @@ environment tuning is needed — **no volume mount or network changes required**
 ### Worker tuning
 
 With an EPYC CPU you can run more than 2 transcode workers. Each `libx265
-slow` encode efficiently uses ~4 threads, so a good starting point is **1
-worker per 4 physical cores**:
+slow` encode **can efficiently use ~4 threads**, so a good starting point is
+**1 worker per 4 physical cores**:
 
 ```yaml
 # compose.starr.yml → tdarr → environment
@@ -90,6 +90,40 @@ healthcheckcpuWorkers: 4  # health checks are lightweight
 
 > **Example:** 16-core EPYC → 4 workers. 32-core → 6–8 workers.
 > Monitor CPU usage after starting and adjust.
+
+### Thread limiting (important!)
+
+⚠️ **`transcodecpuWorkers` controls how many concurrent FFmpeg processes run,
+but libx265 defaults to using ALL available CPU threads per process.** With 4
+workers on a 16-core machine, that's 4 × 16 = 64 threads competing for 16
+cores, causing massive oversubscription and system-wide slowdown.
+
+**Fix 1 — Docker CPU cap (compose.starr.yml):**
+
+```yaml
+# compose.starr.yml → tdarr (top-level service key, not under environment)
+cpus: 12    # hard-cap container to 12 cores, leaving 4 for the OS/other services
+```
+
+This is already applied in compose.starr.yml.
+
+**Fix 2 — Per-encoder thread limit (Tdarr flow):**
+
+Add `pools=4` to the `-x265-params` string in each Custom Arguments node of
+your transcode flow. This tells x265 to use only ~4 threads per encode instead
+of auto-detecting all cores.
+
+- **HDR branch (Node 6a):** Change `outputArguments` to:
+  ```
+  -x265-params hdr-opt=1:repeat-headers=1:pools=4 -color_primaries bt2020 -color_trc smpte2084 -colorspace bt2020nc -pix_fmt yuv420p10le
+  ```
+- **SDR branch:** Add a Custom Arguments node after Node 5b with:
+  ```
+  -x265-params pools=4
+  ```
+
+With `pools=4`, each worker uses ~4 threads → 4 workers × 4 threads = 16
+threads total = full core utilization without oversubscription.
 
 ### Optional: add `starr` network
 
@@ -434,6 +468,18 @@ otherwise).
 *(Identical to 5a — same settings. CPU encoding uses CRF automatically when
 `hardwareEncoding` is false.)*
 
+→ connect to Node 6b
+
+---
+
+**Node 6b — Custom Arguments (SDR thread limiting)**
+
+| Field | Value |
+|-------|-------|
+| Plugin | `ffmpegCommand/ffmpegCommandCustomArguments` |
+| `inputArguments` | *(leave empty)* |
+| `outputArguments` | `-x265-params pools=4` |
+
 → connect to Node 7 (Set Container)
 
 ---
@@ -444,7 +490,7 @@ otherwise).
 |-------|-------|
 | Plugin | `ffmpegCommand/ffmpegCommandCustomArguments` |
 | `inputArguments` | *(leave empty)* |
-| `outputArguments` | `-x265-params hdr-opt=1:repeat-headers=1 -color_primaries bt2020 -color_trc smpte2084 -colorspace bt2020nc -pix_fmt yuv420p10le` |
+| `outputArguments` | `-x265-params hdr-opt=1:repeat-headers=1:pools=4 -color_primaries bt2020 -color_trc smpte2084 -colorspace bt2020nc -pix_fmt yuv420p10le` |
 
 → connect to Node 7 (Set Container)
 
