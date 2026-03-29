@@ -17,6 +17,7 @@ include:
   - compose.starr.yml
   - compose.utilities.yml
   - compose.websites.yml
+  - compose.interview.yml    # temporary - YipitData interview portal
 
 # Network for services behind the reverse proxy (Nginx Proxy Manager)
 networks:
